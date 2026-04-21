@@ -91,6 +91,23 @@ function PhotoPlane({ accentColor }) {
   const meshRef = useRef();
   const { gl } = useThree();
   const mouse = useRef({ x: 0, y: 0 });
+  const [photoTex, setPhotoTex] = useState(null);
+
+  useEffect(() => {
+    // Attempt to load the user's actual photo
+    import('../../assets/profile-photo.jpg')
+      .then((mod) => {
+        const loader = new THREE.TextureLoader();
+        loader.load(mod.default, (tex) => {
+          tex.colorSpace = THREE.SRGBColorSpace;
+          setPhotoTex(tex);
+        });
+      })
+      .catch(() => {
+        // Fallback to placeholder if file is missing
+        console.warn('profile-photo.jpg not found in src/assets. Using placeholder.');
+      });
+  }, []);
 
   useEffect(() => {
     const canvas = gl.domElement;
@@ -111,7 +128,14 @@ function PhotoPlane({ accentColor }) {
 
   return (
     <group ref={meshRef}>
-      <PlaceholderPhoto accentColor={accentColor} />
+      {photoTex ? (
+        <mesh>
+          <circleGeometry args={[1.0, 64]} />
+          <meshBasicMaterial map={photoTex} />
+        </mesh>
+      ) : (
+        <PlaceholderPhoto accentColor={accentColor} />
+      )}
     </group>
   );
 }
