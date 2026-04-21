@@ -1,0 +1,59 @@
+{
+  "tabs": [
+    {
+      "id": "backend",
+      "label": "Backend",
+      "skills": [
+        { "name": "Spring Boot 3.x", "level": 88, "primary": false },
+        { "name": "Spring Security", "level": 82, "primary": false },
+        { "name": "Spring Data JPA", "level": 85, "primary": false },
+        { "name": "Hibernate", "level": 80, "primary": false },
+        { "name": "JWT Auth", "level": 85, "primary": false },
+        { "name": "REST APIs", "level": 90, "primary": false },
+        { "name": "Maven", "level": 78, "primary": false },
+        { "name": "AWS EC2", "level": 70, "primary": false },
+        { "name": "Microservices", "level": 65, "primary": false },
+        { "name": "Java (Primary)", "level": 92, "primary": true }
+      ]
+    },
+    {
+      "id": "frontend",
+      "label": "Frontend",
+      "skills": [
+        { "name": "React 19", "level": 85, "primary": false },
+        { "name": "Redux Toolkit", "level": 80, "primary": false },
+        { "name": "Vite", "level": 82, "primary": false },
+        { "name": "React Router", "level": 85, "primary": false },
+        { "name": "Tailwind CSS", "level": 88, "primary": false },
+        { "name": "HTML5", "level": 90, "primary": false },
+        { "name": "CSS3", "level": 88, "primary": false },
+        { "name": "JavaScript", "level": 84, "primary": false }
+      ]
+    },
+    {
+      "id": "data-iot",
+      "label": "Data & IoT",
+      "skills": [
+        { "name": "PostgreSQL (Supabase)", "level": 82, "primary": false },
+        { "name": "MySQL", "level": 78, "primary": false },
+        { "name": "MongoDB Atlas", "level": 72, "primary": false },
+        { "name": "ThingsBoard", "level": 80, "primary": false },
+        { "name": "Device-Asset Hierarchy", "level": 78, "primary": false },
+        { "name": "Telemetry", "level": 75, "primary": false },
+        { "name": "Rule Chains", "level": 74, "primary": false }
+      ]
+    },
+    {
+      "id": "tools",
+      "label": "Tools",
+      "skills": [
+        { "name": "Git & GitHub", "level": 88, "primary": false },
+        { "name": "Postman", "level": 85, "primary": false },
+        { "name": "IntelliJ IDEA", "level": 90, "primary": false },
+        { "name": "VS Code", "level": 88, "primary": false },
+        { "name": "Python", "level": 65, "primary": false },
+        { "name": "C", "level": 60, "primary": false }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "cert1",
+    "title": "Java Foundation Certification",
+    "issuer": "Infosys Springboard",
+    "date": "Jun 2025",
+    "icon": "coffee",
+    "color": "#00D4FF"
+  },
+  {
+    "id": "cert2",
+    "title": "Software Engineering Job Simulation (Java Spring Boot)",
+    "issuer": "Hewlett Packard Enterprise",
+    "date": "May 2025",
+    "icon": "building",
+    "color": "#0090FF"
+  },
+  {
+    "id": "cert3",
+    "title": "Java Certification",
+    "issuer": "HackerRank",
+    "date": "Mar 2025",
+    "icon": "code",
+    "color": "#7B2FBE"
+  },
+  {
+    "id": "cert4",
+    "title": "Smart India Hackathon 2025 – Team Leader",
+    "issuer": "Government of India",
+    "date": "2025",
+    "icon": "trophy",
+    "color": "#FFD700"
+  },
+  {
+    "id": "cert5",
+    "title": "Patent Holder – EV Charging Networks",
+    "issuer": "Indian Patent Office",
+    "date": "Granted 2025",
+    "icon": "zap",
+    "color": "#FF6B9D"
+  }
+]

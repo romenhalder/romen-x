@@ -1,0 +1,46 @@
+[
+  {
+    "id": "exp1",
+    "role": "Junior Engineer – R&D",
+    "company": "Security Engineers Pvt. Ltd.",
+    "period": "Dec 2025 – Present",
+    "type": "Full-time",
+    "color": "#00D4FF",
+    "icon": "shield",
+    "bullets": [
+      "Developing IoT-based security monitoring solutions using ThingsBoard platform",
+      "Configuring device-asset hierarchy, telemetry flow, and rule chains for real-time event processing",
+      "Building interactive dashboards and implementing alarm/event processing pipelines",
+      "Supporting deployment, system testing, and debugging of enterprise security infrastructure"
+    ]
+  },
+  {
+    "id": "exp2",
+    "role": "Java Full Stack Developer Intern",
+    "company": "Infosys Springboard (Virtual 6.0)",
+    "period": "Feb – Mar 2026",
+    "type": "Internship",
+    "color": "#0090FF",
+    "icon": "code",
+    "bullets": [
+      "Built PharmaTrack Pro — full-stack Pharmaceutical Inventory Management System",
+      "Implemented secure REST APIs, JWT-based role authentication (Admin/Manager/Pharmacist), GXP-compliant PDF reporting",
+      "Integrated Supabase PostgreSQL; managed global state with Redux Toolkit; deployed backend on AWS",
+      "Built POS terminal, smart alerts, supplier management, analytics dashboard, and CSV/PDF exports"
+    ]
+  },
+  {
+    "id": "exp3",
+    "role": "Java Backend Developer Intern",
+    "company": "Ardent Computech Pvt. Ltd.",
+    "period": "Jul – Aug 2025",
+    "type": "Internship",
+    "color": "#7B2FBE",
+    "icon": "server",
+    "bullets": [
+      "Contributed to a group project developing a real-time Chat Web Application",
+      "Designed and integrated the backend using Java Spring Boot",
+      "Built RESTful APIs for messaging and user management"
+    ]
+  }
+]

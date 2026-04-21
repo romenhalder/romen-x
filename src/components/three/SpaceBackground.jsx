@@ -1,0 +1,528 @@
+import { useRef, useMemo, useEffect } from 'react';
+import { useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
+
+// ----- GLSL Noise helpers -----
+const NOISE_GLSL = `
+  vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+  vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+  vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+  vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+  float snoise(vec3 v){
+    const vec2 C=vec2(1.0/6.0,1.0/3.0);
+    const vec4 D=vec4(0.0,0.5,1.0,2.0);
+    vec3 i=floor(v+dot(v,C.yyy));
+    vec3 x0=v-i+dot(i,C.xxx);
+    vec3 g=step(x0.yzx,x0.xyz);
+    vec3 l=1.0-g;
+    vec3 i1=min(g.xyz,l.zxy);
+    vec3 i2=max(g.xyz,l.zxy);
+    vec3 x1=x0-i1+C.xxx;
+    vec3 x2=x0-i2+C.yyy;
+    vec3 x3=x0-D.yyy;
+    i=mod289(i);
+    vec4 p=permute(permute(permute(
+      i.z+vec4(0.0,i1.z,i2.z,1.0))
+      +i.y+vec4(0.0,i1.y,i2.y,1.0))
+      +i.x+vec4(0.0,i1.x,i2.x,1.0));
+    float n_=0.142857142857;
+    vec3 ns=n_*D.wyz-D.xzx;
+    vec4 j=p-49.0*floor(p*ns.z*ns.z);
+    vec4 x_=floor(j*ns.z);
+    vec4 y_=floor(j-7.0*x_);
+    vec4 x=x_*ns.x+ns.yyyy;
+    vec4 y=y_*ns.x+ns.yyyy;
+    vec4 h=1.0-abs(x)-abs(y);
+    vec4 b0=vec4(x.xy,y.xy);
+    vec4 b1=vec4(x.zw,y.zw);
+    vec4 s0=floor(b0)*2.0+1.0;
+    vec4 s1=floor(b1)*2.0+1.0;
+    vec4 sh=-step(h,vec4(0.0));
+    vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;
+    vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+    vec3 p0=vec3(a0.xy,h.x);
+    vec3 p1=vec3(a0.zw,h.y);
+    vec3 p2=vec3(a1.xy,h.z);
+    vec3 p3=vec3(a1.zw,h.w);
+    vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+    p0*=norm.x; p1*=norm.y; p2*=norm.z; p3*=norm.w;
+    vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0);
+    m=m*m;
+    return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+  }
+  float fbm(vec3 p,int octaves){
+    float value=0.0; float amplitude=0.5; float frequency=1.0;
+    for(int i=0;i<octaves;i++){value+=amplitude*snoise(p*frequency);amplitude*=0.5;frequency*=2.0;}
+    return value;
+  }
+`;
+
+// ----- Procedural Earth -----
+function Earth() {
+  const meshRef = useRef();
+  const cloudsRef = useRef();
+  const atmosphereRef = useRef();
+
+  const earthMat = useMemo(() => new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      uLightDir: { value: new THREE.Vector3(1.5, 1, 0.5).normalize() },
+    },
+    vertexShader: `
+      varying vec3 vNormal;
+      varying vec3 vPosition;
+      varying vec2 vUv;
+      void main(){
+        vNormal = normalize(normalMatrix * normal);
+        vPosition = position;
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+      }
+    `,
+    fragmentShader: `
+      ${NOISE_GLSL}
+      uniform float uTime;
+      uniform vec3 uLightDir;
+      varying vec3 vNormal;
+      varying vec3 vPosition;
+      varying vec2 vUv;
+      
+      void main(){
+        vec3 p = normalize(vPosition) * 2.4;
+        float continent = fbm(p, 5);
+        float isLand = smoothstep(0.04, 0.18, continent);
+        
+        // ocean: deep blue
+        vec3 oceanColor = mix(vec3(0.01, 0.12, 0.45), vec3(0.02, 0.28, 0.62), fbm(p * 3.0, 2) * 0.5 + 0.5);
+        // land: green/brown
+        float mountainFactor = smoothstep(0.15, 0.38, continent);
+        vec3 lowland = mix(vec3(0.13, 0.42, 0.13), vec3(0.26, 0.52, 0.18), fbm(p * 5.0, 2) * 0.5 + 0.5);
+        vec3 highland = mix(vec3(0.38, 0.28, 0.16), vec3(0.62, 0.58, 0.52), mountainFactor);
+        vec3 snow = vec3(0.92, 0.94, 0.98);
+        vec3 landColor = mix(lowland, highland, mountainFactor);
+        float snowCap = smoothstep(0.28, 0.42, continent) * (1.0 - smoothstep(0.4, 0.55, continent));
+        landColor = mix(landColor, snow, snowCap);
+        
+        // poles
+        float lat = abs(vUv.y - 0.5) * 2.0;
+        float polarIce = smoothstep(0.78, 0.95, lat);
+        
+        vec3 surfaceColor = mix(oceanColor, landColor, isLand);
+        surfaceColor = mix(surfaceColor, snow, polarIce);
+        
+        // diffuse lighting
+        float diff = max(dot(vNormal, uLightDir), 0.0);
+        float ambient = 0.15;
+        surfaceColor *= (ambient + diff * 0.85);
+        
+        // specular on ocean
+        vec3 viewDir = normalize(cameraPosition - vPosition);
+        vec3 halfDir = normalize(uLightDir + viewDir);
+        float spec = pow(max(dot(vNormal, halfDir), 0.0), 40.0) * (1.0 - isLand) * 0.5;
+        surfaceColor += vec3(spec);
+        
+        // night side city glow (orange dots on dark side)
+        float nightSide = 1.0 - smoothstep(0.0, 0.35, diff);
+        float cityGlow = fbm(p * 8.0, 2);
+        cityGlow = smoothstep(0.35, 0.5, cityGlow) * isLand * nightSide * 0.6;
+        surfaceColor += vec3(1.0, 0.6, 0.2) * cityGlow;
+        
+        gl_FragColor = vec4(surfaceColor, 1.0);
+      }
+    `,
+  }), []);
+
+  const cloudMat = useMemo(() => new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 }, uLightDir: { value: new THREE.Vector3(1.5, 1, 0.5).normalize() } },
+    transparent: true,
+    side: THREE.FrontSide,
+    vertexShader: `
+      varying vec3 vPosition; varying vec3 vNormal;
+      void main(){
+        vPosition = position; vNormal = normalize(normalMatrix * normal);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      ${NOISE_GLSL}
+      uniform float uTime; uniform vec3 uLightDir;
+      varying vec3 vPosition; varying vec3 vNormal;
+      void main(){
+        vec3 p = normalize(vPosition) * 2.6 + vec3(uTime * 0.008, 0.0, 0.0);
+        float cloud = fbm(p, 4);
+        cloud = smoothstep(0.1, 0.4, cloud);
+        float diff = max(dot(vNormal, uLightDir), 0.3);
+        gl_FragColor = vec4(vec3(diff), cloud * 0.78);
+      }
+    `,
+  }), []);
+
+  const atmosphereMat = useMemo(() => new THREE.ShaderMaterial({
+    uniforms: { uLightDir: { value: new THREE.Vector3(1.5, 1, 0.5).normalize() } },
+    transparent: true,
+    side: THREE.FrontSide,
+    vertexShader: `
+      varying vec3 vNormal; varying vec3 vViewDir;
+      void main(){
+        vNormal = normalize(normalMatrix * normal);
+        vViewDir = normalize(cameraPosition - (modelMatrix * vec4(position,1.0)).xyz);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uLightDir;
+      varying vec3 vNormal; varying vec3 vViewDir;
+      void main(){
+        float fresnel = pow(1.0 - max(dot(vNormal, vViewDir), 0.0), 3.0);
+        vec3 atmColor = mix(vec3(0.2, 0.5, 1.0), vec3(0.53, 0.81, 0.98), fresnel);
+        float lightMod = max(dot(vNormal, uLightDir), 0.0);
+        gl_FragColor = vec4(atmColor, fresnel * 0.55 * (0.3 + lightMod * 0.7));
+      }
+    `,
+  }), []);
+
+  useFrame(({ clock: c }) => {
+    const t = c.getElapsedTime();
+    if (meshRef.current) { meshRef.current.rotation.y = t * 0.0008; earthMat.uniforms.uTime.value = t; }
+    if (cloudsRef.current) { cloudsRef.current.rotation.y = t * 0.001; cloudMat.uniforms.uTime.value = t; }
+  });
+
+  return (
+    <group position={[2.5, -0.5, -4]}>
+      {/* Earth */}
+      <mesh ref={meshRef}><sphereGeometry args={[2.2, 64, 64]} /><primitive object={earthMat} /></mesh>
+      {/* Clouds */}
+      <mesh ref={cloudsRef}><sphereGeometry args={[2.26, 48, 48]} /><primitive object={cloudMat} /></mesh>
+      {/* Atmosphere */}
+      <mesh ref={atmosphereRef}><sphereGeometry args={[2.38, 48, 48]} /><primitive object={atmosphereMat} /></mesh>
+    </group>
+  );
+}
+
+// ----- Moon -----
+function Moon() {
+  const ref = useRef();
+  const moonMat = useMemo(() => new THREE.ShaderMaterial({
+    uniforms: { uLightDir: { value: new THREE.Vector3(1.5, 1, 0.5).normalize() } },
+    vertexShader: `
+      varying vec3 vNormal; varying vec3 vPosition;
+      void main(){
+        vNormal = normalize(normalMatrix * normal); vPosition = position;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+      }
+    `,
+    fragmentShader: `
+      ${NOISE_GLSL}
+      uniform vec3 uLightDir;
+      varying vec3 vNormal; varying vec3 vPosition;
+      void main(){
+        vec3 p = normalize(vPosition) * 3.0;
+        float base = fbm(p, 3) * 0.5 + 0.5;
+        float craterBase = 0.68 + base * 0.14;
+        // crater rings
+        for(int i=0;i<4;i++){
+          vec3 cs = vec3(float(i)*2.1, float(i)*1.7, float(i)*0.9);
+          float d = length(p - cs * 0.4);
+          float ring = 1.0 - smoothstep(0.25, 0.35, abs(d - 0.28)) * 0.4;
+          craterBase *= ring;
+        }
+        float diff = max(dot(vNormal, uLightDir), 0.1);
+        vec3 color = vec3(craterBase) * (0.1 + diff * 0.9);
+        gl_FragColor = vec4(color, 1.0);
+      }
+    `,
+  }), []);
+
+  useFrame(({ clock: c }) => {
+    if (!ref.current) return;
+    const t = c.getElapsedTime();
+    const angle = t * (Math.PI * 2 / 12); // 12s orbit
+    ref.current.position.x = 2.5 + Math.cos(angle) * 5;
+    ref.current.position.y = -0.5 + Math.sin(angle) * 0.5;
+    ref.current.position.z = -4 + Math.sin(angle) * 5;
+    ref.current.rotation.y = t * 0.3;
+  });
+
+  return (
+    <mesh ref={ref}>
+      <sphereGeometry args={[0.7, 32, 32]} />
+      <primitive object={moonMat} />
+    </mesh>
+  );
+}
+
+// ----- Astronaut -----
+function Astronaut() {
+  const groupRef = useRef();
+  const tetherRef = useRef();
+
+  const materials = useMemo(() => ({
+    suit: new THREE.MeshStandardMaterial({ color: '#F0F0F0', roughness: 0.7, metalness: 0.1 }),
+    visor: new THREE.MeshStandardMaterial({ color: '#1a3a5c', roughness: 0.1, metalness: 0.8, transparent: true, opacity: 0.85 }),
+    visorGold: new THREE.MeshStandardMaterial({ color: '#C8A020', roughness: 0.2, metalness: 0.9 }),
+    pack: new THREE.MeshStandardMaterial({ color: '#CCCCCC', roughness: 0.6 }),
+  }), []);
+
+  useFrame(({ clock: c }) => {
+    if (!groupRef.current) return;
+    const t = c.getElapsedTime();
+    groupRef.current.position.x = -1.5 + Math.sin(t * 0.3) * 0.4;
+    groupRef.current.position.y = 0.8 + Math.cos(t * 0.22) * 0.35;
+    groupRef.current.position.z = -2.5 + Math.sin(t * 0.18) * 0.2;
+    groupRef.current.rotation.x = Math.sin(t * 0.15) * 0.15;
+    groupRef.current.rotation.y = Math.sin(t * 0.08) * 0.3 - 0.3;
+    groupRef.current.rotation.z = Math.cos(t * 0.12) * 0.08;
+
+    // Update tether
+    if (tetherRef.current) {
+      const positions = tetherRef.current.geometry.attributes.position.array;
+      positions[0] = groupRef.current.position.x;
+      positions[1] = groupRef.current.position.y - 0.15;
+      positions[2] = groupRef.current.position.z;
+      positions[3] = 2.5; positions[4] = -0.5; positions[5] = -4;
+      tetherRef.current.geometry.attributes.position.needsUpdate = true;
+    }
+  });
+
+  const tetherGeo = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+    return g;
+  }, []);
+
+  return (
+    <>
+      {/* Tether line */}
+      <line ref={tetherRef}>
+        <primitive object={tetherGeo} />
+        <lineBasicMaterial color="white" transparent opacity={0.45} />
+      </line>
+
+      <group ref={groupRef} position={[-1.5, 0.8, -2.5]} scale={0.22}>
+        {/* Body */}
+        <mesh position={[0, 0, 0]} material={materials.suit}>
+          <capsuleGeometry args={[0.55, 1.2, 8, 16]} />
+        </mesh>
+        {/* Helmet */}
+        <mesh position={[0, 1.1, 0]} material={materials.suit}>
+          <sphereGeometry args={[0.55, 20, 20]} />
+        </mesh>
+        {/* Visor */}
+        <mesh position={[0, 1.1, 0.32]} material={materials.visor}>
+          <sphereGeometry args={[0.42, 16, 16, 0, Math.PI * 1.2, Math.PI * 0.2, Math.PI * 0.6]} />
+        </mesh>
+        {/* Visor frame */}
+        <mesh position={[0, 1.1, 0.28]} material={materials.visorGold}>
+          <torusGeometry args={[0.42, 0.022, 8, 24]} />
+        </mesh>
+        {/* Left arm */}
+        <mesh position={[-0.75, 0.2, 0]} rotation={[0, 0, 0.5]} material={materials.suit}>
+          <capsuleGeometry args={[0.19, 0.85, 4, 8]} />
+        </mesh>
+        {/* Right arm */}
+        <mesh position={[0.75, 0.2, 0]} rotation={[0, 0, -0.5]} material={materials.suit}>
+          <capsuleGeometry args={[0.19, 0.85, 4, 8]} />
+        </mesh>
+        {/* Left leg */}
+        <mesh position={[-0.28, -1.05, 0]} material={materials.suit}>
+          <capsuleGeometry args={[0.2, 0.8, 4, 8]} />
+        </mesh>
+        {/* Right leg */}
+        <mesh position={[0.28, -1.05, 0]} material={materials.suit}>
+          <capsuleGeometry args={[0.2, 0.8, 4, 8]} />
+        </mesh>
+        {/* Jetpack */}
+        <mesh position={[0, 0.1, -0.64]} material={materials.pack}>
+          <boxGeometry args={[0.55, 0.8, 0.32]} />
+        </mesh>
+        {/* Jetpack nozzles */}
+        {[-0.18, 0.18].map((x) => (
+          <mesh key={x} position={[x, -0.45, -0.65]} material={materials.pack}>
+            <cylinderGeometry args={[0.05, 0.08, 0.2, 8]} />
+          </mesh>
+        ))}
+      </group>
+    </>
+  );
+}
+
+// ----- Stars -----
+function Stars() {
+  const ref = useRef();
+  const count = 6000;
+
+  const { positions, sizes, phases } = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    const sz = new Float32Array(count);
+    const ph = new Float32Array(count);
+    for (let i = 0; i < count; i++) {
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      const r = 25 + Math.random() * 8;
+      pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      pos[i * 3 + 2] = r * Math.cos(phi);
+      sz[i] = Math.random() < 0.1 ? 2.2 : Math.random() < 0.3 ? 1.4 : 0.9;
+      ph[i] = Math.random() * Math.PI * 2;
+    }
+    return { positions: pos, sizes: sz, phases: ph };
+  }, []);
+
+  const starMat = useMemo(() => new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 } },
+    transparent: true,
+    vertexShader: `
+      attribute float aSize; attribute float aPhase;
+      uniform float uTime;
+      varying float vAlpha;
+      void main(){
+        float twinkle = 0.7 + 0.3 * sin(uTime * 2.0 + aPhase);
+        vAlpha = twinkle;
+        gl_PointSize = aSize * twinkle;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      varying float vAlpha;
+      void main(){
+        float d = distance(gl_PointCoord, vec2(0.5));
+        if(d > 0.5) discard;
+        float alpha = smoothstep(0.5, 0.0, d) * vAlpha;
+        gl_FragColor = vec4(1.0, 0.97, 0.9, alpha);
+      }
+    `,
+  }), []);
+
+  useFrame(({ clock: c }) => {
+    starMat.uniforms.uTime.value = c.getElapsedTime();
+  });
+
+  return (
+    <points ref={ref}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
+        <bufferAttribute attach="attributes-aSize" count={count} array={sizes} itemSize={1} />
+        <bufferAttribute attach="attributes-aPhase" count={count} array={phases} itemSize={1} />
+      </bufferGeometry>
+      <primitive object={starMat} />
+    </points>
+  );
+}
+
+// ----- Shooting Star -----
+function ShootingStar() {
+  const ref = useRef();
+  const stateRef = useRef({ active: false, next: 3 + Math.random() * 5 });
+  const startPos = useRef(new THREE.Vector3());
+  const dir = useRef(new THREE.Vector3());
+  const progress = useRef(0);
+
+  useFrame(({ clock: c }) => {
+    const t = c.getElapsedTime();
+    if (!stateRef.current.active && t > stateRef.current.next) {
+      stateRef.current.active = true;
+      progress.current = 0;
+      startPos.current.set((Math.random() - 0.5) * 30, 8 + Math.random() * 6, -10 - Math.random() * 8);
+      dir.current.set((Math.random() - 0.5) * 15, -4 - Math.random() * 6, (Math.random() - 0.5) * 4).normalize();
+    }
+    if (stateRef.current.active) {
+      progress.current += 0.015;
+      if (ref.current) {
+        const pos = ref.current.geometry.attributes.position.array;
+        pos[0] = startPos.current.x + dir.current.x * progress.current * 14;
+        pos[1] = startPos.current.y + dir.current.y * progress.current * 14;
+        pos[2] = startPos.current.z + dir.current.z * progress.current * 14;
+        pos[3] = startPos.current.x + dir.current.x * (progress.current - 0.08) * 14;
+        pos[4] = startPos.current.y + dir.current.y * (progress.current - 0.08) * 14;
+        pos[5] = startPos.current.z + dir.current.z * (progress.current - 0.08) * 14;
+        ref.current.geometry.attributes.position.needsUpdate = true;
+        ref.current.material.opacity = Math.sin(progress.current * Math.PI) * 0.9;
+      }
+      if (progress.current >= 1) {
+        stateRef.current.active = false;
+        stateRef.current.next = t + 5 + Math.random() * 8;
+        progress.current = 0;
+      }
+    }
+  });
+
+  const geo = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+    return g;
+  }, []);
+
+  return (
+    <line ref={ref}>
+      <primitive object={geo} />
+      <lineBasicMaterial color="#C8DEFF" transparent opacity={0} linewidth={2} />
+    </line>
+  );
+}
+
+// ----- Nebula Clouds -----
+function Nebula() {
+  const nebulas = useMemo(() => [
+    { pos: [-8, 4, -18], color1: '#4B0082', color2: '#1a0050', rot: 0.2 },
+    { pos: [10, -3, -20], color1: '#3d0040', color2: '#800060', rot: -0.1 },
+    { pos: [-3, 8, -22], color1: '#00003a', color2: '#1a0050', rot: 0.3 },
+    { pos: [6, 6, -19], color1: '#200020', color2: '#400040', rot: -0.15 },
+  ], []);
+
+  return (
+    <>
+      {nebulas.map((n, i) => {
+        const mat = new THREE.ShaderMaterial({
+          uniforms: {
+            uTime: { value: 0 },
+            uColor1: { value: new THREE.Color(n.color1) },
+            uColor2: { value: new THREE.Color(n.color2) },
+          },
+          transparent: true,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+          vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+          fragmentShader: `
+            ${NOISE_GLSL}
+            uniform float uTime; uniform vec3 uColor1; uniform vec3 uColor2;
+            varying vec2 vUv;
+            void main(){
+              vec2 p = (vUv - 0.5) * 3.0;
+              float n = fbm(vec3(p * 1.2, uTime * 0.04), 4);
+              float alpha = smoothstep(0.3, -0.1, length(p)) * (0.5 + n * 0.5);
+              alpha *= 0.16;
+              vec3 color = mix(uColor1, uColor2, n * 0.5 + 0.5);
+              gl_FragColor = vec4(color, alpha);
+            }
+          `,
+        });
+        return (
+          <mesh key={i} position={n.pos} rotation={[n.rot, i * 0.5, 0]}>
+            <planeGeometry args={[12, 12]} />
+            <primitive object={mat} />
+          </mesh>
+        );
+      })}
+    </>
+  );
+}
+
+// ----- Main Space Scene -----
+export function SpaceBackground() {
+  return (
+    <>
+      {/* Lighting */}
+      <ambientLight intensity={0.14} />
+      <directionalLight position={[8, 4, 6]} color="#FFF5CC" intensity={1.3} />
+
+      <Stars />
+      <Nebula />
+      <Earth />
+      <Moon />
+      <Astronaut />
+      {[1, 2, 3].map((i) => <ShootingStar key={i} />)}
+    </>
+  );
+}
+
+export default SpaceBackground;

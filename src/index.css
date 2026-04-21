@@ -1,0 +1,378 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========================
+   THEME A: OCEAN DAY (bright, light, airy)
+   ======================== */
+:root,
+[data-theme="ocean"] {
+  --color-bg: #F0F8FF;
+  --color-surface: rgba(255, 255, 255, 0.9);
+  --color-accent1: #0EA5E9;
+  --color-accent2: #38BDF8;
+  --color-accent3: #06B6D4;
+  --color-text-primary: #0A2540;
+  --color-text-secondary: #3B7EA6;
+  --color-card-bg: rgba(255, 255, 255, 0.72);
+  --shadow-glow: 0 8px 32px rgba(14, 165, 233, 0.18);
+  --gradient-accent: linear-gradient(135deg, #0EA5E9, #38BDF8, #06B6D4);
+  --border-accent: rgba(14, 165, 233, 0.3);
+  --color-glass-border: rgba(14, 165, 233, 0.25);
+  --nav-bg: rgba(240, 248, 255, 0.9);
+  --nav-border: rgba(14, 165, 233, 0.18);
+  --skeleton-base: rgba(14, 165, 233, 0.08);
+  --skeleton-shine: rgba(14, 165, 233, 0.18);
+}
+
+/* ========================
+   THEME B: DEEP SPACE NIGHT (dark, cosmic)
+   ======================== */
+[data-theme="space"] {
+  --color-bg: #03001C;
+  --color-surface: rgba(10, 5, 40, 0.85);
+  --color-accent1: #C77DFF;
+  --color-accent2: #FF6B9D;
+  --color-accent3: #FFD700;
+  --color-text-primary: #F0E6FF;
+  --color-text-secondary: #B8A9D4;
+  --color-card-bg: rgba(10, 5, 40, 0.78);
+  --shadow-glow: 0 8px 32px rgba(199, 125, 255, 0.18);
+  --gradient-accent: linear-gradient(135deg, #C77DFF, #FF6B9D, #FFD700);
+  --border-accent: rgba(199, 125, 255, 0.28);
+  --color-glass-border: rgba(199, 125, 255, 0.22);
+  --nav-bg: rgba(3, 0, 28, 0.92);
+  --nav-border: rgba(199, 125, 255, 0.12);
+  --skeleton-base: rgba(199, 125, 255, 0.06);
+  --skeleton-shine: rgba(199, 125, 255, 0.14);
+}
+
+/* ========================
+   GLOBAL BASE
+   ======================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; overflow-x: hidden; }
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow-x: hidden;
+  cursor: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (pointer: coarse) { body { cursor: auto; } }
+
+/* Smooth color transitions on theme switch */
+*, *::before, *::after {
+  transition: background-color 600ms ease-in-out, border-color 600ms ease-in-out,
+              color 600ms ease-in-out, box-shadow 600ms ease-in-out;
+}
+canvas, #cursor-dot, #cursor-ring, #scroll-progress, .no-transition, .no-transition * {
+  transition: none !important;
+}
+
+/* ========================
+   SCROLLBAR
+   ======================== */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-accent1); border-radius: 3px; }
+
+/* ========================
+   GLASSMORPHISM — THEME AWARE
+   ======================== */
+.glass {
+  background: var(--color-card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-glass-border);
+}
+.glass-strong {
+  background: var(--color-card-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--color-glass-border);
+}
+.glass-nav {
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--nav-border);
+}
+
+/* ========================
+   GRADIENT TEXT
+   ======================== */
+.gradient-text {
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ========================
+   CARD GLOW
+   ======================== */
+.card-glow { transition: box-shadow 300ms ease, transform 300ms ease !important; }
+.card-glow:hover {
+  box-shadow: 0 0 0 1px var(--color-accent1), var(--shadow-glow);
+  transform: translateY(-4px);
+}
+
+/* ========================
+   SCROLL PROGRESS BAR
+   ======================== */
+#scroll-progress {
+  position: fixed; top: 0; left: 0; height: 3px;
+  background: var(--gradient-accent);
+  z-index: 9999; transform-origin: left;
+}
+
+/* ========================
+   CUSTOM CURSOR
+   ======================== */
+#cursor-dot {
+  position: fixed; top: 0; left: 0; width: 10px; height: 10px;
+  background: var(--color-accent1); border-radius: 50%;
+  pointer-events: none; z-index: 99999;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: multiply;
+}
+#cursor-ring {
+  position: fixed; top: 0; left: 0; width: 30px; height: 30px;
+  border: 2px solid var(--color-accent1); border-radius: 50%;
+  pointer-events: none; z-index: 99998;
+  transform: translate(-50%, -50%); opacity: 0.7;
+}
+#cursor-dot.hovering { transform: translate(-50%, -50%) scale(0); }
+#cursor-ring.hovering {
+  transform: translate(-50%, -50%) scale(1.5);
+  background: color-mix(in srgb, var(--color-accent1) 25%, transparent);
+}
+
+/* ========================
+   SHIMMER SKELETON
+   ======================== */
+.skeleton {
+  background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 8px;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ========================
+   LOADING SCREEN
+   ======================== */
+.loading-screen {
+  position: fixed; inset: 0; background: var(--color-bg); z-index: 99997;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+
+/* ========================
+   TYPEWRITER CURSOR
+   ======================== */
+.typewriter-cursor {
+  display: inline-block; width: 3px; background: var(--color-accent1);
+  animation: blink 1s step-end infinite; vertical-align: text-bottom; height: 1.1em; margin-left: 2px;
+}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* ========================
+   FLOAT + SPARKLE ANIMATIONS
+   ======================== */
+@keyframes floatAnim { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-12px); } }
+.animate-float { animation: floatAnim 3s ease-in-out infinite; }
+
+@keyframes sparkleAnim {
+  0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+  50% { opacity: 0.7; transform: scale(1.15) rotate(90deg); }
+}
+.animate-sparkle { animation: sparkleAnim 3s ease-in-out infinite; }
+
+/* ========================
+   SCROLL INDICATOR
+   ======================== */
+@keyframes scrollBounce { 0%, 100% { transform: translateY(0); opacity: 1; } 50% { transform: translateY(8px); opacity: 0.5; } }
+.scroll-indicator { animation: scrollBounce 2s ease-in-out infinite; }
+
+/* ========================
+   TIMELINE LINE
+   ======================== */
+.timeline-line { background: linear-gradient(180deg, var(--color-accent1), var(--color-accent3)); }
+
+/* ========================
+   FORM INPUTS — THEME AWARE
+   ======================== */
+.form-input {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-glass-border);
+  color: var(--color-text-primary);
+}
+.form-input:focus {
+  border-color: var(--color-accent1); outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent1) 15%, transparent);
+}
+.form-input::placeholder { color: var(--color-text-secondary); opacity: 0.6; }
+
+/* ========================
+   SELECT OPTION FIX (light theme)
+   ======================== */
+[data-theme="ocean"] select option { background: #F0F8FF; color: #0A2540; }
+[data-theme="space"] select option { background: #0D0B2B; color: #F0E6FF; }
+
+/* ========================
+   BENTO GRID
+   ======================== */
+.bento-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+
+/* ========================
+   CIRCUIT PATTERN (Patent)
+   ======================== */
+.circuit-pattern {
+  background-image: linear-gradient(rgba(255,215,0,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,215,0,0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* ========================
+   MASONRY GRID
+   ======================== */
+.masonry-grid { columns: 3; column-gap: 1.5rem; }
+@media (max-width: 768px) { .masonry-grid { columns: 2; } }
+@media (max-width: 480px) { .masonry-grid { columns: 1; } }
+.masonry-item { break-inside: avoid; margin-bottom: 1.5rem; }
+
+/* ========================
+   BOTTOM TAB BAR
+   ======================== */
+.bottom-tab-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--color-card-bg);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--color-glass-border);
+  z-index: 100; padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ========================
+   SECTION HEADING LINE
+   ======================== */
+.section-heading-line { background: var(--gradient-accent); height: 3px; border-radius: 2px; }
+
+/* ========================
+   RIPPLE BUTTON
+   ======================== */
+.btn-ripple { position: relative; overflow: hidden; }
+.btn-ripple::after {
+  content: ''; position: absolute; inset: 50%;
+  width: 0; height: 0; background: rgba(255,255,255,0.3); border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.btn-ripple:active::after { width: 200px; height: 200px; opacity: 0; transition: width 600ms ease, height 600ms ease, opacity 600ms ease !important; }
+
+/* ========================
+   FOCUS VISIBLE
+   ======================== */
+:focus-visible { outline: 2px solid var(--color-accent1); outline-offset: 2px; border-radius: 4px; }
+
+/* ========================
+   AVATAR RING ANIMATION
+   ======================== */
+.avatar-ring-svg {
+  stroke-dasharray: 289; stroke-dashoffset: 289;
+  animation: ringTrace 2s ease-out 0.3s forwards;
+}
+@keyframes ringTrace { to { stroke-dashoffset: 0; } }
+
+/* ========================
+   TILT CARD 3D
+   ======================== */
+.tilt-card { transform-style: preserve-3d; perspective: 1000px; }
+
+/* ========================
+   WAVE SVG FOOTER
+   ======================== */
+.wave-container { overflow: hidden; line-height: 0; }
+
+/* ========================
+   SKILL TAB ACTIVE STATE
+   ======================== */
+.skill-tab-active { background: var(--gradient-accent); color: white; }
+
+/* ========================
+   PULSE GLOW
+   ======================== */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 15px var(--color-accent1); }
+  50% { box-shadow: 0 0 35px var(--color-accent1), 0 0 70px var(--color-accent1); }
+}
+.animate-pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
+
+/* ========================
+   PROJECT THUMBNAIL
+   ======================== */
+.project-thumbnail {
+  width: 100%; height: 180px; object-fit: cover; display: block;
+  transition: transform 300ms ease, filter 300ms ease !important;
+}
+.project-thumbnail:hover { transform: scale(1.03); filter: brightness(1.08); }
+
+/* ========================
+   SCREENSHOT NAV ARROWS
+   ======================== */
+.screenshot-nav-btn {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: rgba(0,0,0,0.5); color: white; border: none;
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 10; backdrop-filter: blur(4px);
+  transition: background 200ms ease !important;
+}
+.screenshot-nav-btn:hover { background: rgba(0,0,0,0.8); }
+
+/* ========================
+   PHOTO GALLERY LIGHTBOX OVERRIDE
+   ======================== */
+.react-photo-album--photo {
+  border-radius: 12px; overflow: hidden; cursor: pointer;
+  transition: transform 300ms ease, box-shadow 300ms ease !important;
+}
+.react-photo-album--photo:hover { transform: scale(1.02); box-shadow: var(--shadow-glow); }
+
+/* ========================
+   HERO LETTER
+   ======================== */
+.hero-letter { display: inline-block; }
+
+/* ========================
+   PATENT BADGE
+   ======================== */
+@keyframes patentPulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(255,215,0,0.4); }
+  50% { box-shadow: 0 0 28px rgba(255,215,0,0.8), 0 0 50px rgba(255,215,0,0.3); }
+}
+.patent-glow { animation: patentPulse 2.5s ease-in-out infinite; }
+
+/* ========================
+   PROFILE PHOTO 3D CONTAINER
+   ======================== */
+.profile-photo-canvas {
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+/* ========================
+   ADMIN MODE BADGE
+   ======================== */
+.admin-badge {
+  position: fixed; bottom: 80px; left: 16px;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid #22c55e; color: #22c55e;
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+  z-index: 200; pointer-events: none;
+}

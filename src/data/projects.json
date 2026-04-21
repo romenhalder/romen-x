@@ -1,0 +1,241 @@
+[
+  {
+    "id": "pharmatrack",
+    "title": "PharmaTrack Pro",
+    "subtitle": "Pharmaceutical Inventory Platform",
+    "description": "Enterprise pharma management with POS terminal, JWT multi-role auth, GXP PDF reporting, and real-time analytics.",
+    "longDescription": "PharmaTrack Pro is a comprehensive Pharmaceutical Inventory Management System built with Java Spring Boot 3.x backend and React 19 frontend. Features multi-role JWT authentication (Admin, Manager, Pharmacist), a full-featured POS terminal with GST calculation, smart stock alerts, supplier management, analytics dashboards, and GXP-compliant PDF/CSV exports deployed on AWS EC2.",
+    "tech": ["Java Spring Boot", "React 19", "Redux Toolkit", "PostgreSQL", "Supabase", "AWS EC2", "JWT", "jsPDF"],
+    "category": ["Spring Boot", "React", "Full Stack"],
+    "featured": true,
+    "githubUrl": "https://github.com/romenhalder/Team-C-Infosys_SpringBoard_Internship",
+    "liveUrl": null,
+    "period": "Feb–Mar 2026",
+    "color": "#0EA5E9",
+    "screenshots": [],
+    "techSpecs": {
+      "architecture": "Monolithic Spring Boot + React SPA",
+      "authMethod": "JWT with role-based access (Admin / Manager / Pharmacist)",
+      "database": "Supabase PostgreSQL",
+      "deployment": "AWS EC2 (backend), Vercel (frontend)",
+      "keyFeatures": ["POS Terminal with GST", "Schedule H/H1/X validation", "Real-time low-stock alerts", "CSV/PDF export", "Analytics dashboard", "Supplier management"]
+    },
+    "features": [
+      { "icon": "lock", "title": "Multi-Role JWT Auth", "desc": "Admin, Manager, Pharmacist with Spring Security filter chains" },
+      { "icon": "shopping-cart", "title": "POS Terminal", "desc": "Full POS with GST calculation, cart management, and receipt generation" },
+      { "icon": "bar-chart", "title": "Analytics Dashboard", "desc": "Revenue insights, stock trends, and supplier performance metrics" },
+      { "icon": "file-text", "title": "GXP-Compliant Reports", "desc": "PDF reports meeting pharmaceutical compliance standards" },
+      { "icon": "bell", "title": "Smart Alerts", "desc": "Low stock, expiry, and reorder notifications" },
+      { "icon": "database", "title": "Supplier Management", "desc": "Vendor tracking, purchase orders, and supply chain" }
+    ],
+    "architecture": {
+      "nodes": [
+        {"id": "react", "label": "React 19 Frontend", "type": "frontend", "x": 50, "y": 200},
+        {"id": "redux", "label": "Redux Toolkit", "type": "frontend", "x": 50, "y": 80},
+        {"id": "spring", "label": "Spring Boot 3.x", "type": "backend", "x": 300, "y": 200},
+        {"id": "jwt", "label": "JWT + Spring Security", "type": "security", "x": 430, "y": 80},
+        {"id": "supabase", "label": "Supabase PostgreSQL", "type": "database", "x": 530, "y": 200},
+        {"id": "aws", "label": "AWS EC2", "type": "cloud", "x": 680, "y": 200}
+      ],
+      "edges": [
+        {"from": "react", "to": "redux", "label": "state"},
+        {"from": "react", "to": "spring", "label": "REST API"},
+        {"from": "spring", "to": "jwt", "label": "auth"},
+        {"from": "spring", "to": "supabase", "label": "JPA"},
+        {"from": "spring", "to": "aws", "label": "deployed"}
+      ]
+    }
+  },
+  {
+    "id": "bakery",
+    "title": "Bakery Inventory System",
+    "subtitle": "Full-Stack Inventory Management",
+    "description": "Secure REST APIs, JWT auth, Redux state management, and Spring Data JPA for bakery stock and order management.",
+    "longDescription": "A full-stack bakery management application with Spring Boot REST API, JWT authentication, React frontend with Redux Toolkit state management, and MySQL database. Features inventory tracking, role-based access, order management, and reporting.",
+    "tech": ["Java Spring Boot", "React", "MySQL", "Redux Toolkit", "JWT"],
+    "category": ["Spring Boot", "React", "Full Stack"],
+    "featured": false,
+    "githubUrl": "https://github.com/romenhalder/bakery-inventory-management",
+    "liveUrl": null,
+    "period": "Feb–Mar 2026",
+    "color": "#06B6D4",
+    "screenshots": [],
+    "techSpecs": {
+      "architecture": "Spring Boot REST + React SPA",
+      "authMethod": "JWT role-based",
+      "database": "MySQL / H2 (dev)",
+      "deployment": "Local / GitHub",
+      "keyFeatures": ["Inventory tracking", "Role-based auth", "Order management", "Reporting"]
+    },
+    "features": [
+      { "icon": "package", "title": "Product Catalog", "desc": "Dynamic product management with categories and pricing" },
+      { "icon": "shopping-bag", "title": "Order Processing", "desc": "Complete order lifecycle from creation to delivery" },
+      { "icon": "alert-triangle", "title": "Low-Stock Alerts", "desc": "Automated alerts when ingredient levels fall below threshold" }
+    ],
+    "architecture": {
+      "nodes": [
+        {"id": "react", "label": "React Frontend", "type": "frontend", "x": 50, "y": 150},
+        {"id": "spring", "label": "Spring Boot", "type": "backend", "x": 300, "y": 150},
+        {"id": "mysql", "label": "MySQL Database", "type": "database", "x": 550, "y": 150}
+      ],
+      "edges": [
+        {"from": "react", "to": "spring", "label": "REST API"},
+        {"from": "spring", "to": "mysql", "label": "JPA"}
+      ]
+    }
+  },
+  {
+    "id": "expense-splitter",
+    "title": "Expense Splitter",
+    "subtitle": "Automated Group Settlement App",
+    "description": "Automated balance settlement for shared expenses with user groups and JWT-secured REST APIs.",
+    "longDescription": "A Spring Boot + ReactJS application for splitting group expenses. Features user group management, expense tracking, automatic debt settlement calculation, and JWT-secured REST APIs with MySQL persistence.",
+    "tech": ["Java Spring Boot", "ReactJS", "MySQL", "JWT"],
+    "category": ["Spring Boot", "React", "Full Stack"],
+    "featured": false,
+    "githubUrl": "https://github.com/romenhalder/expense_splitter",
+    "liveUrl": null,
+    "period": "Nov 2025",
+    "color": "#38BDF8",
+    "screenshots": [],
+    "techSpecs": {
+      "architecture": "Spring Boot REST + ReactJS SPA",
+      "authMethod": "JWT",
+      "database": "MySQL",
+      "deployment": "Local / GitHub",
+      "keyFeatures": ["User groups", "Expense splitting", "Auto settlement", "Responsive UI"]
+    },
+    "features": [
+      { "icon": "users", "title": "Group Management", "desc": "Create groups, add members, manage shared expenses" },
+      { "icon": "calculator", "title": "Smart Splitting", "desc": "Debt simplification algorithm minimizes transactions" },
+      { "icon": "check-circle", "title": "Settlement Tracking", "desc": "Mark settlements and view history" }
+    ],
+    "architecture": {
+      "nodes": [
+        {"id": "react", "label": "ReactJS Frontend", "type": "frontend", "x": 50, "y": 150},
+        {"id": "spring", "label": "Spring Boot", "type": "backend", "x": 300, "y": 150},
+        {"id": "mysql", "label": "MySQL", "type": "database", "x": 550, "y": 150}
+      ],
+      "edges": [
+        {"from": "react", "to": "spring", "label": "REST"},
+        {"from": "spring", "to": "mysql", "label": "JPA"}
+      ]
+    }
+  },
+  {
+    "id": "secure-journal",
+    "title": "Secure Journal Web App",
+    "subtitle": "Cloud-Persisted Personal Journal",
+    "description": "Spring Security authentication, role-based access, and MongoDB Atlas cloud persistence for private journaling.",
+    "longDescription": "A secure personal journaling web application built with Spring Boot, Spring Security for authentication, and MongoDB Atlas for cloud persistence. Features role-based access control, encrypted storage, and a clean REST API.",
+    "tech": ["Java Spring Boot", "MongoDB Atlas", "Spring Security", "Lombok"],
+    "category": ["Spring Boot"],
+    "featured": false,
+    "githubUrl": "https://github.com/romenhalder",
+    "liveUrl": null,
+    "period": "Apr–May 2025",
+    "color": "#C77DFF",
+    "screenshots": [],
+    "techSpecs": {
+      "architecture": "Spring Boot Monolith",
+      "authMethod": "Spring Security (form + basic auth)",
+      "database": "MongoDB Atlas",
+      "deployment": "Local / GitHub",
+      "keyFeatures": ["Secure auth", "Role-based access", "Cloud persistence", "Clean REST API"]
+    },
+    "features": [
+      { "icon": "lock", "title": "Secure Authentication", "desc": "Spring Security with form and basic auth" },
+      { "icon": "cloud", "title": "Cloud Persistence", "desc": "MongoDB Atlas for reliable cloud storage" },
+      { "icon": "shield", "title": "Role-Based Access", "desc": "Granular permissions per user role" }
+    ],
+    "architecture": {
+      "nodes": [
+        {"id": "spring", "label": "Spring Boot", "type": "backend", "x": 200, "y": 150},
+        {"id": "security", "label": "Spring Security", "type": "security", "x": 350, "y": 50},
+        {"id": "mongo", "label": "MongoDB Atlas", "type": "database", "x": 500, "y": 150}
+      ],
+      "edges": [
+        {"from": "spring", "to": "security", "label": "auth"},
+        {"from": "spring", "to": "mongo", "label": "repository"}
+      ]
+    }
+  },
+  {
+    "id": "group-chat",
+    "title": "Group Chat Web App",
+    "subtitle": "Real-Time Messaging Backend",
+    "description": "RESTful group messaging backend with Spring Boot. Built during internship at Ardent Computech Pvt. Ltd.",
+    "longDescription": "A real-time group chat web application developed as a team project during internship at Ardent Computech. Features WebSocket-based messaging, user registration, group creation, and persistence. I was responsible for the Spring Boot backend and REST API design.",
+    "tech": ["Java Spring Boot", "REST APIs", "WebSocket"],
+    "category": ["Spring Boot"],
+    "featured": false,
+    "githubUrl": "https://github.com/romenhalder/group-chat-web-App",
+    "liveUrl": null,
+    "period": "Jul–Aug 2025",
+    "color": "#FFD700",
+    "screenshots": [],
+    "techSpecs": {
+      "architecture": "Spring Boot REST API",
+      "authMethod": "Basic auth",
+      "database": "In-memory / H2",
+      "deployment": "Local",
+      "keyFeatures": ["Group rooms", "Real-time messaging", "User management", "REST endpoints"]
+    },
+    "features": [
+      { "icon": "message-circle", "title": "Real-Time Messaging", "desc": "WebSocket-based instant messaging" },
+      { "icon": "users", "title": "Group Rooms", "desc": "Create and join multiple group chat rooms" },
+      { "icon": "clock", "title": "Message History", "desc": "Persistent message history with database storage" }
+    ],
+    "architecture": {
+      "nodes": [
+        {"id": "spring", "label": "Spring Boot", "type": "backend", "x": 250, "y": 150},
+        {"id": "ws", "label": "WebSocket", "type": "frontend", "x": 50, "y": 150},
+        {"id": "h2", "label": "H2 Database", "type": "database", "x": 450, "y": 150}
+      ],
+      "edges": [
+        {"from": "ws", "to": "spring", "label": "WS/REST"},
+        {"from": "spring", "to": "h2", "label": "JPA"}
+      ]
+    }
+  },
+  {
+    "id": "ev-patent",
+    "title": "EV Charging Network Patent",
+    "subtitle": "Patent No. 202531058380 · Granted 2025",
+    "description": "Patented geolocation model for optimizing EV charging station networks. Spring Boot backend, REST APIs.",
+    "longDescription": "Granted Indian Patent (No. 202531058380) for an innovative Integrated Geolocation Model for Electric Vehicle Charging Networks. I developed the backend system using Java Spring Boot REST APIs to support geolocation-based charging station discovery, reservation, and billing.",
+    "tech": ["Java Spring Boot", "REST APIs", "Geolocation"],
+    "category": ["Spring Boot", "Patent"],
+    "featured": true,
+    "isPatent": true,
+    "patentNumber": "202531058380",
+    "githubUrl": "https://github.com/romenhalder",
+    "liveUrl": null,
+    "period": "Granted 2025",
+    "color": "#FFD700",
+    "screenshots": [],
+    "techSpecs": {
+      "architecture": "Spring Boot REST + Geolocation Engine",
+      "authMethod": "REST API",
+      "database": "N/A (research prototype)",
+      "deployment": "N/A",
+      "keyFeatures": ["Geolocation optimization", "EV station placement algorithm", "REST APIs", "Patent secured"]
+    },
+    "features": [
+      { "icon": "map-pin", "title": "Geolocation Model", "desc": "Discovers nearest EV charging stations via GPS" },
+      { "icon": "zap", "title": "Smart Reservation", "desc": "Real-time station availability and slot booking" },
+      { "icon": "credit-card", "title": "Automated Billing", "desc": "Usage-based billing integrated with reservations" }
+    ],
+    "architecture": {
+      "nodes": [
+        {"id": "api", "label": "Spring Boot REST API", "type": "backend", "x": 250, "y": 150},
+        {"id": "geo", "label": "Geolocation Engine", "type": "backend", "x": 450, "y": 80},
+        {"id": "client", "label": "Mobile/Web Client", "type": "frontend", "x": 50, "y": 150}
+      ],
+      "edges": [
+        {"from": "client", "to": "api", "label": "REST"},
+        {"from": "api", "to": "geo", "label": "geo-calc"}
+      ]
+    }
+  }
+]

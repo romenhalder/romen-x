@@ -1,0 +1,50 @@
+{
+  "name": "Romen Halder",
+  "title": "Junior Software Engineer & Java Full Stack Developer",
+  "subtitle": "MCA Final Year · Spring Boot · React · IoT",
+  "email": "romenromen2002@gmail.com",
+  "phone": "+91-9002660313",
+  "location": "Kolkata, India",
+  "github": "https://github.com/romenhalder",
+  "linkedin": "https://linkedin.com/in/romenhalder",
+  "dob": "3rd May 2002",
+  "nationality": "Indian",
+  "languages": ["English", "Hindi", "Bengali"],
+  "summary": "MCA student (2026 batch) and Junior Engineer at Security Engineers Pvt. Ltd., with hands-on experience building full-stack applications using Java Spring Boot, React, and PostgreSQL. Proven track record in REST API design, JWT-based authentication, role-based access control, and real-time IoT monitoring via ThingsBoard. Passionate about building scalable, cloud-ready systems.",
+  "availability": "Open to full-time roles from mid-2026",
+  "education": [
+    {
+      "degree": "MCA",
+      "institution": "Brainware University",
+      "period": "2024–2026",
+      "score": "CGPA 9.02/10",
+      "color": "#00D4FF"
+    },
+    {
+      "degree": "BCA",
+      "institution": "Murshidabad College of Engineering & Technology",
+      "period": "2021–2024",
+      "score": "CGPA 8.76/10",
+      "color": "#0090FF"
+    },
+    {
+      "degree": "12th (WBCHSE)",
+      "institution": "West Bengal Council of Higher Secondary Education",
+      "period": "2020",
+      "score": "75%",
+      "color": "#7B2FBE"
+    },
+    {
+      "degree": "10th (WBBSE)",
+      "institution": "West Bengal Board of Secondary Education",
+      "period": "2018",
+      "score": "67%",
+      "color": "#8ECAE6"
+    }
+  ],
+  "stats": [
+    { "label": "Years Building", "value": 2, "suffix": "+" },
+    { "label": "Projects Shipped", "value": 5, "suffix": "+" },
+    { "label": "Patent Granted", "value": 1, "suffix": "" }
+  ]
+}
