@@ -1,11 +1,10 @@
-import { Suspense, lazy, useEffect } from 'react';
+import { Suspense, lazy } from 'react';
 import { motion } from 'framer-motion';
 import { Canvas } from '@react-three/fiber';
-import { Github, Linkedin, Download, ChevronDown, Sparkles, MapPin } from 'lucide-react';
+import { Github, Linkedin, Download, ChevronDown, MapPin, Send } from 'lucide-react';
 import { useThemeStore } from '../store/themeStore';
 import { useTypewriter } from '../hooks/useTypewriter';
 import { useReducedMotion } from '../hooks/useReducedMotion';
-import { useCountUp } from '../hooks/useCountUp';
 import { scrollToSection } from '../utils/helpers';
 import { ProfilePhoto3D } from '../components/three/ProfilePhoto3D';
 import profile from '../data/profile.json';
@@ -26,43 +25,28 @@ function AnimatedName() {
   const name = 'ROMEN HALDER';
   return (
     <h1
-      className="font-space font-black leading-none mb-3"
-      style={{ fontSize: 'clamp(2.8rem, 7vw, 6.5rem)' }}
+      className="font-space font-black"
+      style={{
+        fontSize: 'clamp(2.2rem, 6.5vw, 5.5rem)',
+        whiteSpace: 'nowrap',
+        lineHeight: 1,
+        textShadow: '0 0 30px rgba(14, 165, 233, 0.4), 0 0 60px rgba(199, 125, 255, 0.2)',
+        marginBottom: '0.5rem',
+      }}
       aria-label="Romen Halder"
     >
       {name.split('').map((char, i) => (
         <motion.span
           key={i}
           className="hero-letter gradient-text"
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 + i * 0.04, duration: 0.4, ease: 'easeOut' }}
+          transition={{ delay: 0.08 + i * 0.03, duration: 0.4, ease: 'easeOut' }}
         >
           {char === ' ' ? '\u00A0' : char}
         </motion.span>
       ))}
     </h1>
-  );
-}
-
-// Stat counter card
-function StatCard({ stat, index }) {
-  const count = useCountUp(stat.value, 1500, true);
-  return (
-    <motion.div
-      className="glass rounded-2xl px-5 py-4 text-center"
-      style={{ border: '1px solid var(--color-glass-border)' }}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 1.2 + index * 0.1 }}
-    >
-      <div className="font-black text-2xl font-space gradient-text">
-        {count}{stat.suffix}
-      </div>
-      <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-secondary)' }}>
-        {stat.label}
-      </div>
-    </motion.div>
   );
 }
 
@@ -72,13 +56,12 @@ export function Hero() {
   const typedText = useTypewriter(TYPEWRITER_TEXTS, 75, 1800, 40);
   const isOcean = theme === 'ocean';
 
-  // Ocean theme — lighter overlay; Space — darker
   const overlayStyle = isOcean
-    ? 'linear-gradient(135deg, rgba(240,248,255,0.5) 0%, rgba(240,248,255,0.2) 60%, transparent 100%)'
-    : 'linear-gradient(135deg, rgba(3,0,28,0.7) 0%, rgba(3,0,28,0.35) 60%, transparent 100%)';
+    ? 'linear-gradient(180deg, rgba(240,248,255,0.4) 0%, rgba(240,248,255,0.15) 50%, transparent 100%)'
+    : 'linear-gradient(180deg, rgba(3,0,28,0.6) 0%, rgba(3,0,28,0.25) 50%, transparent 100%)';
 
   return (
-    <section id="hero" className="relative" style={{ height: '100dvh', minHeight: '600px' }}>
+    <section id="hero" className="relative" style={{ height: '100dvh', minHeight: '700px' }}>
       {/* Three.js Canvas */}
       {!prefersReduced && (
         <div className="absolute inset-0 z-0 pointer-events-none" aria-hidden="true">
@@ -95,56 +78,40 @@ export function Hero() {
         </div>
       )}
 
-      {/* Gradient overlay for readability */}
+      {/* Overlay for text readability */}
       <div
         className="absolute inset-0 z-10 pointer-events-none"
         style={{ background: overlayStyle }}
         aria-hidden="true"
       />
 
-      {/* Content */}
+      {/* Main Content — LEFT: text, RIGHT: large profile photo */}
       <div className="relative z-20 h-full flex items-center">
-        <div className="max-w-7xl mx-auto w-full px-6 pt-16 pb-20">
-          <div className="grid lg:grid-cols-[1fr_auto] gap-10 items-center">
+        <div className="max-w-7xl mx-auto w-full px-6">
+          <div className="grid lg:grid-cols-2 gap-8 items-center">
 
-            {/* LEFT */}
-            <div className="text-center lg:text-left max-w-2xl">
-              {/* Patent badge */}
-              <motion.div
-                className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full text-xs font-semibold patent-glow"
-                style={{
-                  background: 'rgba(255,215,0,0.15)',
-                  color: '#B8860B',
-                  border: '1px solid rgba(255,215,0,0.45)',
-                }}
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.15 }}
-              >
-                <Sparkles size={12} className="animate-sparkle" aria-hidden="true" />
-                ⚡ Patent No. 202531058380 — Granted 2025
-              </motion.div>
-
+            {/* LEFT COLUMN — Name, Role, CTAs */}
+            <div className="text-center lg:text-left order-2 lg:order-1">
               <AnimatedName />
 
               {/* Subtitle */}
               <motion.p
-                className="text-base md:text-lg font-medium mb-3"
+                className="text-base md:text-lg font-medium mb-2"
                 style={{ color: 'var(--color-text-secondary)' }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.75 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.55 }}
               >
                 {profile.subtitle}
               </motion.p>
 
               {/* Location */}
               <motion.div
-                className="flex items-center justify-center lg:justify-start gap-1.5 mb-4 text-sm"
+                className="flex items-center justify-center lg:justify-start gap-1.5 mb-3 text-sm"
                 style={{ color: 'var(--color-text-secondary)' }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.85 }}
+                transition={{ delay: 0.65 }}
               >
                 <MapPin size={14} style={{ color: 'var(--color-accent1)' }} />
                 Kolkata, India
@@ -152,108 +119,109 @@ export function Hero() {
 
               {/* Typewriter */}
               <motion.div
-                className="text-xl md:text-2xl font-space font-bold mb-6 h-9"
-                style={{ color: 'var(--color-accent1)' }}
+                className="text-xl md:text-2xl font-space font-bold mb-8 h-9"
+                style={{ color: 'var(--color-accent1)', textShadow: '0 0 10px var(--color-accent1)' }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.9 }}
+                transition={{ delay: 0.75 }}
               >
                 {typedText}
                 <span className="typewriter-cursor" aria-hidden="true" />
               </motion.div>
 
-              {/* CTAs */}
+              {/* CTA Buttons */}
               <motion.div
-                className="flex flex-wrap gap-3 justify-center lg:justify-start mb-5"
+                className="flex flex-wrap gap-3 justify-center lg:justify-start mb-6"
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.1 }}
+                transition={{ delay: 0.9 }}
               >
+                {/* View Projects — neon cyan */}
                 <button
                   onClick={() => scrollToSection('projects')}
-                  className="px-6 py-3 rounded-xl font-semibold text-sm btn-ripple cursor-pointer"
-                  style={{ background: 'var(--gradient-accent)', color: 'white' }}
-                  aria-label="View my work - scroll to projects"
+                  className="hero-btn-neon px-7 py-3 rounded-full font-bold text-sm uppercase tracking-wider cursor-pointer"
+                  style={{
+                    background: 'rgba(14, 165, 233, 0.08)',
+                    color: '#0EA5E9',
+                    border: '1.5px solid rgba(14, 165, 233, 0.6)',
+                    boxShadow: '0 0 12px rgba(14, 165, 233, 0.3), inset 0 0 12px rgba(14, 165, 233, 0.08)',
+                    textShadow: '0 0 8px rgba(14,165,233,0.5)',
+                    transition: 'all 0.3s ease',
+                  }}
+                  aria-label="View projects"
                 >
-                  View My Work
+                  View Projects
                 </button>
+
+                {/* Contact Me — neon purple */}
+                <button
+                  onClick={() => scrollToSection('contact')}
+                  className="hero-btn-neon px-7 py-3 rounded-full font-bold text-sm uppercase tracking-wider cursor-pointer flex items-center gap-2"
+                  style={{
+                    background: 'rgba(199, 125, 255, 0.08)',
+                    color: '#C77DFF',
+                    border: '1.5px solid rgba(199, 125, 255, 0.6)',
+                    boxShadow: '0 0 12px rgba(199, 125, 255, 0.3), inset 0 0 12px rgba(199, 125, 255, 0.08)',
+                    textShadow: '0 0 8px rgba(199,125,255,0.5)',
+                    transition: 'all 0.3s ease',
+                  }}
+                  aria-label="Contact me"
+                >
+                  <Send size={14} /> Contact Me
+                </button>
+
+                {/* Download CV — glass */}
                 <a
                   href="/resume.pdf"
                   download="Romen_Halder_Resume.pdf"
-                  className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm glass"
+                  className="flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm glass"
                   style={{ color: 'var(--color-accent1)', border: '1px solid var(--border-accent)' }}
                   aria-label="Download resume PDF"
                 >
-                  <Download size={15} /> Download CV
+                  <Download size={14} /> Download CV
                 </a>
               </motion.div>
 
-              {/* Social links */}
+              {/* Social + Status */}
               <motion.div
-                className="flex gap-3 justify-center lg:justify-start mb-5"
+                className="flex flex-wrap gap-3 items-center justify-center lg:justify-start"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 1.25 }}
+                transition={{ delay: 1.05 }}
               >
                 <a href={profile.github} target="_blank" rel="noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl glass text-sm font-medium card-glow"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl glass text-sm font-medium"
                   style={{ color: 'var(--color-text-primary)', border: '1px solid var(--color-glass-border)' }}
                   aria-label="GitHub profile">
-                  <Github size={16} /> GitHub
+                  <Github size={15} /> GitHub
                 </a>
                 <a href={profile.linkedin} target="_blank" rel="noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl glass text-sm font-medium card-glow"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl glass text-sm font-medium"
                   style={{ color: 'var(--color-text-primary)', border: '1px solid var(--color-glass-border)' }}
                   aria-label="LinkedIn profile">
-                  <Linkedin size={16} /> LinkedIn
+                  <Linkedin size={15} /> LinkedIn
                 </a>
-              </motion.div>
 
-              {/* Availability badge */}
-              <motion.div
-                className="inline-flex items-center gap-2 text-xs font-medium"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.35 }}
-              >
-                <span
-                  className="w-2 h-2 rounded-full"
-                  style={{ background: '#22c55e', boxShadow: '0 0 6px #22c55e', animation: 'pulseGlow 2s infinite' }}
-                />
-                <span style={{ color: '#22c55e' }}>Open to full-time roles from mid-2026</span>
+                {/* Availability */}
+                <div className="flex items-center gap-2 text-xs font-medium ml-1">
+                  <span
+                    className="w-2 h-2 rounded-full"
+                    style={{ background: '#22c55e', boxShadow: '0 0 6px #22c55e', animation: 'pulseGlow 2s infinite' }}
+                  />
+                  <span style={{ color: '#22c55e' }}>Available mid-2026</span>
+                </div>
               </motion.div>
             </div>
 
-            {/* RIGHT — 3D Photo + Stats */}
-            <div className="flex flex-col items-center gap-6">
-              {/* 3D Profile Photo */}
+            {/* RIGHT COLUMN — Large Profile Photo */}
+            <div className="flex items-center justify-center order-1 lg:order-2">
               <motion.div
-                className="animate-float"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.6, type: 'spring', bounce: 0.4 }}
+                initial={{ opacity: 0, scale: 0.75, y: 30 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ delay: 0.4, type: 'spring', bounce: 0.35, duration: 0.8 }}
               >
-                <ProfilePhoto3D size={typeof window !== 'undefined' && window.innerWidth < 640 ? 170 : 210} />
+                <ProfilePhoto3D size={typeof window !== 'undefined' && window.innerWidth < 640 ? 280 : 420} />
               </motion.div>
-
-              {/* Photo hint */}
-              <motion.p
-                className="text-xs text-center max-w-[200px]"
-                style={{ color: 'var(--color-text-secondary)', opacity: 0.7 }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.7 }}
-                transition={{ delay: 1.5 }}
-              >
-                💡 Place photo at{' '}
-                <code className="text-xs" style={{ color: 'var(--color-accent1)' }}>src/assets/profile-photo.jpg</code>
-              </motion.p>
-
-              {/* Stat cards */}
-              <div className="grid grid-cols-3 gap-3 w-full">
-                {profile.stats.map((stat, i) => (
-                  <StatCard key={stat.label} stat={stat} index={i} />
-                ))}
-              </div>
             </div>
           </div>
         </div>
@@ -266,6 +234,17 @@ export function Hero() {
         </p>
         <ChevronDown size={20} className="scroll-indicator" style={{ color: 'var(--color-accent1)' }} />
       </div>
+
+      {/* Neon button hover style */}
+      <style>{`
+        .hero-btn-neon:hover {
+          filter: brightness(1.3);
+          transform: translateY(-1px);
+        }
+        .hero-btn-neon:active {
+          transform: translateY(0);
+        }
+      `}</style>
     </section>
   );
 }
