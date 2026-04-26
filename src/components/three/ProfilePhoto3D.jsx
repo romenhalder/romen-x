@@ -1,185 +1,210 @@
-import { useRef, useMemo, useEffect, useState, Suspense } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { useRef, useMemo, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { useThemeStore } from '../../store/themeStore';
 
-// Procedural placeholder (initials RH on gradient)
-function PlaceholderPhoto({ accentColor }) {
-  const canvasTexture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 256; canvas.height = 256;
-    const ctx = canvas.getContext('2d');
-    // Gradient background
-    const grad = ctx.createRadialGradient(128, 100, 10, 128, 128, 128);
-    grad.addColorStop(0, '#1a2a4a');
-    grad.addColorStop(1, '#071220');
-    ctx.fillStyle = grad; ctx.fillRect(0, 0, 256, 256);
-    // Silhouette
-    ctx.fillStyle = '#2a3f60';
-    ctx.beginPath(); ctx.arc(128, 90, 50, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(128, 210, 72, 80, 0, 0, Math.PI * 2); ctx.fill();
-    // Initials
-    ctx.fillStyle = accentColor; ctx.font = 'bold 52px "Inter", sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('RH', 128, 120);
-    // Border ring
-    ctx.strokeStyle = accentColor; ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.arc(128, 128, 120, 0, Math.PI * 2); ctx.stroke();
-    return new THREE.CanvasTexture(canvas);
-  }, [accentColor]);
-
-  return (
-    <mesh>
-      <circleGeometry args={[1.0, 64]} />
-      <meshBasicMaterial map={canvasTexture} transparent />
-    </mesh>
-  );
-}
-
-// Orbiting particle ring
-function OrbitRing({ color, radius = 1.55, count = 60, speed = 0.5 }) {
-  const ref = useRef();
-  const { positions, phases } = useMemo(() => {
-    const pos = new Float32Array(count * 3);
-    const ph = new Float32Array(count);
-    for (let i = 0; i < count; i++) {
-      const angle = (i / count) * Math.PI * 2;
-      const tilt = (Math.random() - 0.5) * 0.4;
-      pos[i * 3] = Math.cos(angle) * radius;
-      pos[i * 3 + 1] = Math.sin(angle) * radius * 0.3 + tilt;
-      pos[i * 3 + 2] = Math.sin(angle) * radius * 0.5;
-      ph[i] = Math.random() * Math.PI * 2;
-    }
-    return { positions: pos, phases: ph };
-  }, [count, radius]);
-
-  useFrame(({ clock: c }) => {
-    if (!ref.current) return;
-    ref.current.rotation.y = c.getElapsedTime() * speed;
-    ref.current.rotation.x = Math.sin(c.getElapsedTime() * 0.3) * 0.2;
-  });
-
-  return (
-    <points ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
-        <bufferAttribute attach="attributes-aPhase" count={count} array={phases} itemSize={1} />
-      </bufferGeometry>
-      <pointsMaterial color={color} size={0.04} transparent opacity={0.8} sizeAttenuation />
-    </points>
-  );
-}
-
-// Pulsing glow ring 
-function GlowRing({ color, isHovered }) {
-  const ref = useRef();
-  useFrame(({ clock: c }) => {
-    if (!ref.current) return;
-    const pulse = 0.85 + Math.sin(c.getElapsedTime() * 2.5) * 0.15;
-    ref.current.material.opacity = pulse * (isHovered ? 0.95 : 0.55);
-    ref.current.rotation.z = c.getElapsedTime() * (isHovered ? 0.8 : 0.3);
-  });
-  return (
-    <mesh ref={ref} rotation={[0, 0, 0]}>
-      <ringGeometry args={[1.12, 1.22, 64]} />
-      <meshBasicMaterial color={color} transparent opacity={0.55} side={THREE.DoubleSide} />
-    </mesh>
-  );
-}
-
-// 3D photo plane with tilt
-function PhotoPlane({ accentColor }) {
-  const meshRef = useRef();
-  const { gl } = useThree();
-  const mouse = useRef({ x: 0, y: 0 });
-  const [photoTex, setPhotoTex] = useState(null);
-
-  useEffect(() => {
-    // Attempt to load the user's actual photo
-    import('../../assets/profile-photo.jpg')
-      .then((mod) => {
-        const loader = new THREE.TextureLoader();
-        loader.load(mod.default, (tex) => {
-          tex.colorSpace = THREE.SRGBColorSpace;
-          setPhotoTex(tex);
-        });
-      })
-      .catch(() => {
-        // Fallback to placeholder if file is missing
-        console.warn('profile-photo.jpg not found in src/assets. Using placeholder.');
-      });
-  }, []);
-
-  useEffect(() => {
-    const canvas = gl.domElement;
-    const onMove = (e) => {
-      const rect = canvas.getBoundingClientRect();
-      mouse.current.x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
-      mouse.current.y = -((e.clientY - rect.top) / rect.height - 0.5) * 2;
-    };
-    canvas.addEventListener('mousemove', onMove);
-    return () => canvas.removeEventListener('mousemove', onMove);
-  }, [gl]);
-
-  useFrame(() => {
-    if (!meshRef.current) return;
-    meshRef.current.rotation.y += (mouse.current.x * 0.25 - meshRef.current.rotation.y) * 0.08;
-    meshRef.current.rotation.x += (-mouse.current.y * 0.25 - meshRef.current.rotation.x) * 0.08;
-  });
-
-  return (
-    <group ref={meshRef}>
-      {photoTex ? (
-        <mesh>
-          <circleGeometry args={[1.0, 64]} />
-          <meshBasicMaterial map={photoTex} />
-        </mesh>
-      ) : (
-        <PlaceholderPhoto accentColor={accentColor} />
-      )}
-    </group>
-  );
-}
-
-// The full 3D scene inside the small canvas
-function PhotoScene({ accentColor, isHovered }) {
-  return (
-    <>
-      <ambientLight intensity={0.8} />
-      <pointLight position={[2, 2, 2]} intensity={1.2} color={accentColor} />
-      <pointLight position={[-2, -1, 1]} intensity={0.3} color="#ffffff" />
-
-      <GlowRing color={accentColor} isHovered={isHovered} />
-      <PhotoPlane accentColor={accentColor} />
-      <OrbitRing color={accentColor} radius={1.55} count={50} speed={0.4} />
-      <OrbitRing color={accentColor} radius={1.75} count={35} speed={-0.25} />
-    </>
-  );
-}
-
-export function ProfilePhoto3D({ size = 200 }) {
+/**
+ * ProfilePhoto3D — A large, animated, CSS-based profile photo with neon glow.
+ * No nested Canvas — renders as a pure DOM component to avoid conflicts with the
+ * main Hero Canvas. Uses CSS animations for float, pulse, and glow.
+ */
+export function ProfilePhoto3D({ size = 320 }) {
   const { theme } = useThemeStore();
+  const [photoUrl, setPhotoUrl] = useState(null);
   const [isHovered, setIsHovered] = useState(false);
-  const accentColor = theme === 'ocean' ? '#0EA5E9' : '#C77DFF';
+  const isOcean = theme === 'ocean';
+  const accent = isOcean ? '#0EA5E9' : '#C77DFF';
+  const accent2 = isOcean ? '#38BDF8' : '#A855F7';
+  const glowColor = isOcean ? 'rgba(14,165,233,' : 'rgba(199,125,255,';
+
+  // Try to dynamically load the profile photo
+  useEffect(() => {
+    import('../../assets/profile-photo.jpg')
+      .then((mod) => setPhotoUrl(mod.default))
+      .catch(() => setPhotoUrl(null));
+  }, []);
 
   return (
     <div
       style={{
-        width: size, height: size, borderRadius: '50%',
-        overflow: 'hidden', position: 'relative', cursor: 'none',
+        width: size,
+        height: size,
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      aria-label="Romen Halder 3D profile photo"
+      aria-label="Romen Halder profile photo"
     >
-      <Canvas
-        camera={{ position: [0, 0, 2.8], fov: 45 }}
-        dpr={[1, 2]}
-        style={{ background: 'transparent' }}
+      {/* Outer pulsing glow */}
+      <div
+        className="hero-photo-glow"
+        style={{
+          position: 'absolute',
+          inset: '-12%',
+          borderRadius: '50%',
+          background: `radial-gradient(circle, ${glowColor}0.25) 0%, ${glowColor}0.08) 40%, transparent 70%)`,
+          animation: 'heroPhotoGlow 3s ease-in-out infinite',
+          transition: 'all 0.5s ease',
+          transform: isHovered ? 'scale(1.08)' : 'scale(1)',
+        }}
+      />
+
+      {/* Rotating ring 1 — outer dashed */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: '-6%',
+          borderRadius: '50%',
+          border: `2px dashed ${glowColor}0.35)`,
+          animation: 'heroRingSpin 20s linear infinite',
+        }}
+      />
+
+      {/* Rotating ring 2 — inner solid thin */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: '-2%',
+          borderRadius: '50%',
+          border: `1.5px solid ${glowColor}0.6)`,
+          animation: 'heroRingSpin 14s linear infinite reverse',
+        }}
+      />
+
+      {/* Rotating ring 3 — partial arc */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: '-9%',
+          borderRadius: '50%',
+          border: `2px solid transparent`,
+          borderTop: `2px solid ${accent}`,
+          borderRight: `2px solid ${accent2}`,
+          animation: 'heroRingSpin 8s linear infinite',
+          opacity: 0.7,
+        }}
+      />
+
+      {/* Floating dots on orbit */}
+      {[0, 60, 120, 180, 240, 300].map((deg) => (
+        <div
+          key={deg}
+          style={{
+            position: 'absolute',
+            width: 6,
+            height: 6,
+            borderRadius: '50%',
+            background: accent,
+            boxShadow: `0 0 8px ${accent}, 0 0 16px ${accent}`,
+            top: '50%',
+            left: '50%',
+            transform: `rotate(${deg}deg) translateX(${size * 0.54}px) translateY(-50%)`,
+            animation: `heroRingSpin 12s linear infinite`,
+            opacity: 0.8,
+          }}
+        />
+      ))}
+
+      {/* Main photo container */}
+      <div
+        className="hero-photo-float"
+        style={{
+          width: size * 0.82,
+          height: size * 0.82,
+          borderRadius: '50%',
+          overflow: 'hidden',
+          position: 'relative',
+          zIndex: 2,
+          border: `3px solid ${glowColor}0.6)`,
+          boxShadow: `
+            0 0 20px ${glowColor}0.5),
+            0 0 40px ${glowColor}0.3),
+            0 0 80px ${glowColor}0.15),
+            inset 0 0 30px ${glowColor}0.1)
+          `,
+          animation: 'heroPhotoFloat 5s ease-in-out infinite',
+          transition: 'transform 0.4s ease, box-shadow 0.4s ease',
+          transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+        }}
       >
-        <Suspense fallback={null}>
-          <PhotoScene accentColor={accentColor} isHovered={isHovered} />
-        </Suspense>
-      </Canvas>
+        {photoUrl ? (
+          <img
+            src={photoUrl}
+            alt="Romen Halder"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              display: 'block',
+              filter: `brightness(1.05) contrast(1.05) saturate(1.1)`,
+            }}
+            draggable={false}
+          />
+        ) : (
+          /* Placeholder with initials */
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: `radial-gradient(circle at 40% 35%, #1a2a4a, #071220)`,
+              position: 'relative',
+            }}
+          >
+            {/* Silhouette */}
+            <svg viewBox="0 0 200 200" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+              <circle cx="100" cy="72" r="35" fill="#2a3f60" />
+              <ellipse cx="100" cy="160" rx="52" ry="55" fill="#2a3f60" />
+            </svg>
+            <span
+              style={{
+                position: 'relative',
+                zIndex: 2,
+                fontSize: size * 0.18,
+                fontWeight: 900,
+                fontFamily: '"Space Grotesk", monospace',
+                color: accent,
+                textShadow: `0 0 20px ${accent}, 0 0 40px ${accent}`,
+              }}
+            >
+              RH
+            </span>
+          </div>
+        )}
+
+        {/* Hover scan-line overlay */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: isHovered
+              ? `linear-gradient(180deg, transparent 0%, ${glowColor}0.1) 50%, transparent 100%)`
+              : 'none',
+            pointerEvents: 'none',
+            transition: 'background 0.4s ease',
+          }}
+        />
+      </div>
+
+      {/* CSS Animations */}
+      <style>{`
+        @keyframes heroPhotoFloat {
+          0%, 100% { transform: translateY(0px) scale(1); }
+          50% { transform: translateY(-10px) scale(1.02); }
+        }
+        @keyframes heroPhotoGlow {
+          0%, 100% { opacity: 0.7; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.05); }
+        }
+        @keyframes heroRingSpin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
