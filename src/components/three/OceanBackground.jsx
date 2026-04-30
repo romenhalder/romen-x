@@ -2,164 +2,19 @@ import { useRef, useMemo, useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
-// ----- Ocean Wave Surface -----
-function OceanSurface() {
-  const meshRef = useRef();
-  const materialRef = useRef();
-  const clock = useRef(0);
+/**
+ * Premium Day Mode Background
+ * Soft gradient sky + gentle floating particles + mesh grid lines
+ * Inspired by Apple/Linear/Stripe hero backgrounds
+ */
 
-  const geometry = useMemo(() => {
-    const g = new THREE.PlaneGeometry(30, 30, 80, 80);
-    return g;
-  }, []);
-
-  const material = useMemo(() => {
-    return new THREE.ShaderMaterial({
-      uniforms: {
-        uTime: { value: 0 },
-        uColorShallow: { value: new THREE.Color('#38BDF8') },
-        uColorDeep: { value: new THREE.Color('#0369A1') },
-        uColorFoam: { value: new THREE.Color('#DBEAFE') },
-      },
-      vertexShader: `
-        uniform float uTime;
-        varying float vElevation;
-        varying vec2 vUv;
-        
-        void main() {
-          vUv = uv;
-          vec3 pos = position;
-          float freq = 0.5;
-          float amp = 0.3;
-          pos.z += sin(pos.x * freq + uTime * 0.8) * amp;
-          pos.z += sin(pos.y * freq * 0.7 + uTime * 0.65) * amp * 0.8;
-          pos.z += sin((pos.x + pos.y) * freq * 0.4 + uTime * 1.1) * amp * 0.5;
-          vElevation = pos.z;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform vec3 uColorShallow;
-        uniform vec3 uColorDeep;
-        uniform vec3 uColorFoam;
-        varying float vElevation;
-        varying vec2 vUv;
-        
-        void main() {
-          float t = (vElevation + 0.35) / 0.7;
-          t = clamp(t, 0.0, 1.0);
-          vec3 color = mix(uColorDeep, uColorShallow, t);
-          // foam highlights at wave peaks
-          float foam = smoothstep(0.25, 0.35, vElevation);
-          color = mix(color, uColorFoam, foam * 0.6);
-          // specular
-          float spec = pow(max(t - 0.5, 0.0) * 2.0, 3.0) * 0.6;
-          color += vec3(spec);
-          gl_FragColor = vec4(color, 0.92);
-        }
-      `,
-      transparent: true,
-      side: THREE.DoubleSide,
-    });
-  }, []);
-
-  useFrame(({ clock: c }) => {
-    if (materialRef.current) materialRef.current.uniforms.uTime.value = c.getElapsedTime();
-  });
-
-  return (
-    <mesh ref={meshRef} rotation={[-Math.PI / 2.2, 0, 0]} position={[0, -1.5, -2]}>
-      <primitive object={geometry} />
-      <primitive object={material} ref={materialRef} />
-    </mesh>
-  );
-}
-
-// ----- Foam Particles -----
-function FoamParticles() {
-  const ref = useRef();
-  const count = 1500;
-
-  const { positions, speeds } = useMemo(() => {
-    const pos = new Float32Array(count * 3);
-    const spd = new Float32Array(count);
-    for (let i = 0; i < count; i++) {
-      pos[i * 3 + 0] = (Math.random() - 0.5) * 28;
-      pos[i * 3 + 1] = -0.8 + Math.random() * 0.6;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 18 - 2;
-      spd[i] = 0.002 + Math.random() * 0.005;
-    }
-    return { positions: pos, speeds: spd };
-  }, []);
-
-  useFrame(() => {
-    if (!ref.current) return;
-    const pos = ref.current.geometry.attributes.position.array;
-    for (let i = 0; i < count; i++) {
-      pos[i * 3 + 0] += speeds[i] * 0.6;
-      if (pos[i * 3 + 0] > 14) pos[i * 3 + 0] = -14;
-    }
-    ref.current.geometry.attributes.position.needsUpdate = true;
-  });
-
-  return (
-    <points ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
-      </bufferGeometry>
-      <pointsMaterial color="#DBEAFE" size={0.04} transparent opacity={0.7} sizeAttenuation />
-    </points>
-  );
-}
-
-// ----- Floating Bubbles -----
-function Bubbles() {
-  const ref = useRef();
-  const count = 120;
-
-  const { positions, phases } = useMemo(() => {
-    const pos = new Float32Array(count * 3);
-    const ph = new Float32Array(count);
-    for (let i = 0; i < count; i++) {
-      pos[i * 3 + 0] = (Math.random() - 0.5) * 20;
-      pos[i * 3 + 1] = -2 + Math.random() * 3;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 14 - 2;
-      ph[i] = Math.random() * Math.PI * 2;
-    }
-    return { positions: pos, phases: ph };
-  }, []);
-
-  useFrame(({ clock: c }) => {
-    if (!ref.current) return;
-    const pos = ref.current.geometry.attributes.position.array;
-    const t = c.getElapsedTime();
-    for (let i = 0; i < count; i++) {
-      pos[i * 3 + 1] += 0.003;
-      pos[i * 3 + 0] += Math.sin(t + phases[i]) * 0.001;
-      if (pos[i * 3 + 1] > 2) {
-        pos[i * 3 + 1] = -2;
-        pos[i * 3 + 0] = (Math.random() - 0.5) * 20;
-      }
-    }
-    ref.current.geometry.attributes.position.needsUpdate = true;
-  });
-
-  return (
-    <points ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
-      </bufferGeometry>
-      <pointsMaterial color="#BFDBFE" size={0.05} transparent opacity={0.55} sizeAttenuation />
-    </points>
-  );
-}
-
-// ----- Sky Background Mesh -----
-function Sky() {
+// ----- Gradient Sky Dome -----
+function GradientSky() {
   const mat = useMemo(() => new THREE.ShaderMaterial({
     uniforms: {
-      uColorTop: { value: new THREE.Color('#87CEEB') },
-      uColorBottom: { value: new THREE.Color('#F0F8FF') },
+      uColorTop: { value: new THREE.Color('#E8F0FE') },
+      uColorMid: { value: new THREE.Color('#F0F4FF') },
+      uColorBottom: { value: new THREE.Color('#FAFBFF') },
     },
     vertexShader: `
       varying vec2 vUv;
@@ -167,10 +22,17 @@ function Sky() {
     `,
     fragmentShader: `
       uniform vec3 uColorTop;
+      uniform vec3 uColorMid;
       uniform vec3 uColorBottom;
       varying vec2 vUv;
       void main() {
-        vec3 col = mix(uColorBottom, uColorTop, pow(vUv.y, 0.5));
+        float t = pow(vUv.y, 0.6);
+        vec3 col;
+        if(t < 0.5) {
+          col = mix(uColorBottom, uColorMid, t * 2.0);
+        } else {
+          col = mix(uColorMid, uColorTop, (t - 0.5) * 2.0);
+        }
         gl_FragColor = vec4(col, 1.0);
       }
     `,
@@ -179,13 +41,180 @@ function Sky() {
 
   return (
     <mesh>
-      <sphereGeometry args={[40, 32, 32]} />
+      <sphereGeometry args={[50, 32, 32]} />
       <primitive object={mat} />
     </mesh>
   );
 }
 
-// ----- Camera Bob -----
+// ----- Soft Floating Particles -----
+function FloatingParticles() {
+  const ref = useRef();
+  const count = 300;
+
+  const { positions, sizes, phases } = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    const sz = new Float32Array(count);
+    const ph = new Float32Array(count);
+    for (let i = 0; i < count; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * 40;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 20;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 30 - 5;
+      sz[i] = 0.8 + Math.random() * 1.5;
+      ph[i] = Math.random() * Math.PI * 2;
+    }
+    return { positions: pos, sizes: sz, phases: ph };
+  }, []);
+
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 } },
+    transparent: true,
+    depthWrite: false,
+    vertexShader: `
+      attribute float aSize;
+      attribute float aPhase;
+      uniform float uTime;
+      varying float vAlpha;
+      void main() {
+        float drift = sin(uTime * 0.3 + aPhase) * 0.5;
+        vec3 pos = position;
+        pos.y += drift;
+        pos.x += sin(uTime * 0.15 + aPhase * 2.0) * 0.3;
+        float flicker = 0.4 + 0.6 * sin(uTime * 0.8 + aPhase);
+        vAlpha = flicker * 0.35;
+        gl_PointSize = aSize * flicker;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+      }
+    `,
+    fragmentShader: `
+      varying float vAlpha;
+      void main() {
+        float d = distance(gl_PointCoord, vec2(0.5));
+        if(d > 0.5) discard;
+        float alpha = smoothstep(0.5, 0.0, d) * vAlpha;
+        gl_FragColor = vec4(0.4, 0.55, 0.9, alpha);
+      }
+    `,
+  }), []);
+
+  useFrame(({ clock: c }) => { mat.uniforms.uTime.value = c.getElapsedTime(); });
+
+  return (
+    <points ref={ref}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
+        <bufferAttribute attach="attributes-aSize" count={count} array={sizes} itemSize={1} />
+        <bufferAttribute attach="attributes-aPhase" count={count} array={phases} itemSize={1} />
+      </bufferGeometry>
+      <primitive object={mat} />
+    </points>
+  );
+}
+
+// ----- Subtle Grid Mesh (Linear-style) -----
+function GridMesh() {
+  const ref = useRef();
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 } },
+    transparent: true,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+    vertexShader: `
+      varying vec2 vUv;
+      void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      varying vec2 vUv;
+      void main() {
+        vec2 grid = fract(vUv * 20.0);
+        float lineX = smoothstep(0.02, 0.0, abs(grid.x - 0.5) - 0.48);
+        float lineY = smoothstep(0.02, 0.0, abs(grid.y - 0.5) - 0.48);
+        float line = max(lineX, lineY);
+        
+        // Fade at edges
+        float edgeFade = smoothstep(0.0, 0.2, vUv.x) * smoothstep(1.0, 0.8, vUv.x) *
+                         smoothstep(0.0, 0.3, vUv.y) * smoothstep(1.0, 0.7, vUv.y);
+        
+        // Subtle wave pulse
+        float pulse = 0.03 + 0.02 * sin(uTime * 0.5 + vUv.x * 6.0 + vUv.y * 4.0);
+        
+        float alpha = line * edgeFade * pulse;
+        gl_FragColor = vec4(0.37, 0.51, 0.85, alpha);
+      }
+    `,
+  }), []);
+
+  useFrame(({ clock: c }) => { mat.uniforms.uTime.value = c.getElapsedTime(); });
+
+  return (
+    <mesh ref={ref} rotation={[-Math.PI / 2.4, 0, 0]} position={[0, -3, -8]}>
+      <planeGeometry args={[50, 30, 1, 1]} />
+      <primitive object={mat} />
+    </mesh>
+  );
+}
+
+// ----- Soft Light Orbs (bokeh-like) -----
+function LightOrbs() {
+  const orbData = useMemo(() => [
+    { pos: [-6, 3, -12], color: '#2563EB', scale: 3.0, speed: 0.2 },
+    { pos: [8, 2, -15], color: '#0EA5E9', scale: 4.0, speed: 0.15 },
+    { pos: [-3, -1, -10], color: '#6366F1', scale: 2.5, speed: 0.25 },
+    { pos: [5, 4, -18], color: '#818CF8', scale: 3.5, speed: 0.12 },
+  ], []);
+
+  return (
+    <>
+      {orbData.map((orb, i) => (
+        <OrbMesh key={i} {...orb} index={i} />
+      ))}
+    </>
+  );
+}
+
+function OrbMesh({ pos, color, scale, speed, index }) {
+  const ref = useRef();
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    uniforms: {
+      uColor: { value: new THREE.Color(color) },
+      uTime: { value: 0 },
+    },
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `
+      uniform vec3 uColor;
+      uniform float uTime;
+      varying vec2 vUv;
+      void main() {
+        float d = distance(vUv, vec2(0.5));
+        float alpha = smoothstep(0.5, 0.0, d) * 0.07;
+        float pulse = 1.0 + 0.15 * sin(uTime * 0.8);
+        gl_FragColor = vec4(uColor, alpha * pulse);
+      }
+    `,
+  }), [color]);
+
+  useFrame(({ clock: c }) => {
+    const t = c.getElapsedTime();
+    mat.uniforms.uTime.value = t;
+    if (ref.current) {
+      ref.current.position.y = pos[1] + Math.sin(t * speed + index) * 0.5;
+      ref.current.position.x = pos[0] + Math.cos(t * speed * 0.7 + index) * 0.3;
+    }
+  });
+
+  return (
+    <mesh ref={ref} position={pos}>
+      <planeGeometry args={[scale, scale]} />
+      <primitive object={mat} />
+    </mesh>
+  );
+}
+
+// ----- Camera Parallax -----
 function CameraController() {
   const { camera } = useThree();
   const mouse = useRef({ x: 0, y: 0 });
@@ -193,18 +222,18 @@ function CameraController() {
 
   useEffect(() => {
     const onMove = (e) => {
-      mouse.current.x = (e.clientX / window.innerWidth - 0.5) * 3;
-      mouse.current.y = (e.clientY / window.innerHeight - 0.5) * -1.5;
+      mouse.current.x = (e.clientX / window.innerWidth - 0.5) * 1.5;
+      mouse.current.y = (e.clientY / window.innerHeight - 0.5) * -0.8;
     };
     window.addEventListener('mousemove', onMove, { passive: true });
     return () => window.removeEventListener('mousemove', onMove);
   }, []);
 
-  useFrame(({ clock: c }) => {
-    target.current.x += (mouse.current.x - target.current.x) * 0.04;
-    target.current.y += (mouse.current.y - target.current.y) * 0.04;
+  useFrame(() => {
+    target.current.x += (mouse.current.x - target.current.x) * 0.03;
+    target.current.y += (mouse.current.y - target.current.y) * 0.03;
     camera.position.x = target.current.x;
-    camera.position.y = 1.5 + target.current.y + Math.sin(c.getElapsedTime() * 0.5) * 0.08;
+    camera.position.y = 1.5 + target.current.y;
   });
 
   return null;
@@ -214,22 +243,15 @@ function CameraController() {
 export function OceanBackground() {
   return (
     <>
-      <Sky />
-      <OceanSurface />
-      <FoamParticles />
-      <Bubbles />
+      <GradientSky />
+      <GridMesh />
+      <FloatingParticles />
+      <LightOrbs />
       <CameraController />
 
-      {/* Sun */}
-      <pointLight position={[8, 6, -8]} color="#FFF5CC" intensity={3} distance={60} />
-      <pointLight position={[8, 6, -8]} color="#FFFDE4" intensity={1} distance={40} />
-
-      {/* Ambient */}
-      <ambientLight color="#87CEEB" intensity={1.2} />
-      <directionalLight position={[5, 8, 2]} color="#FFFFFF" intensity={0.8} />
-
-      {/* Shallow water depth fog */}
-      <fog attach="fog" color="#C7E8FB" near={18} far={35} />
+      {/* Soft ambient lighting — no harsh shadows */}
+      <ambientLight color="#F0F4FF" intensity={1.6} />
+      <directionalLight position={[5, 8, 2]} color="#E8F0FE" intensity={0.4} />
     </>
   );
 }
