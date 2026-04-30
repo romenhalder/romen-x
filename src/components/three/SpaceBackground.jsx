@@ -404,10 +404,13 @@ function Earth() {
 }
 
 // =====================================================
-// MOON
+// MOON — orbiting around Earth
 // =====================================================
 function Moon() {
   const ref = useRef();
+  const glowRef = useRef();
+  const earthCenter = useMemo(() => new THREE.Vector3(-4.5, -1.5, -8), []);
+
   const moonMat = useMemo(() => new THREE.ShaderMaterial({
     uniforms: { uLightDir: { value: new THREE.Vector3(1.5, 1, 0.5).normalize() } },
     vertexShader: `
@@ -434,17 +437,61 @@ function Moon() {
     `,
   }), []);
 
+  // Glow material for the moon
+  const glowMat = useMemo(() => new THREE.ShaderMaterial({
+    uniforms: {},
+    transparent: true,
+    side: THREE.BackSide,
+    depthWrite: false,
+    vertexShader: `
+      varying vec3 vNormal; varying vec3 vViewDir;
+      void main(){
+        vNormal = normalize(normalMatrix * normal);
+        vViewDir = normalize(cameraPosition - (modelMatrix * vec4(position,1.0)).xyz);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+      }
+    `,
+    fragmentShader: `
+      varying vec3 vNormal; varying vec3 vViewDir;
+      void main(){
+        float fresnel = pow(1.0 - max(dot(vNormal, vViewDir), 0.0), 3.0);
+        gl_FragColor = vec4(0.85, 0.88, 0.95, fresnel * 0.3);
+      }
+    `,
+  }), []);
+
   useFrame(({ clock: c }) => {
     if (!ref.current) return;
     const t = c.getElapsedTime();
-    ref.current.rotation.y = t * 0.1;
+
+    // Orbit parameters
+    const orbitRadius = 6.5;
+    const orbitSpeed = 0.08; // ~78 second full orbit
+    const tiltAngle = 0.25; // slight orbital tilt
+    const angle = t * orbitSpeed;
+
+    // Compute orbit position around Earth
+    const x = earthCenter.x + Math.cos(angle) * orbitRadius;
+    const y = earthCenter.y + Math.sin(angle) * Math.sin(tiltAngle) * orbitRadius * 0.3;
+    const z = earthCenter.z + Math.sin(angle) * orbitRadius;
+
+    ref.current.position.set(x, y, z);
+    ref.current.rotation.y = t * 0.08; // slow self-rotation
   });
 
   return (
-    <mesh ref={ref} position={[6, 2.5, -14]}>
-      <sphereGeometry args={[1.0, 32, 32]} />
-      <primitive object={moonMat} />
-    </mesh>
+    <group ref={ref}>
+      {/* Moon surface */}
+      <mesh>
+        <sphereGeometry args={[0.8, 32, 32]} />
+        <primitive object={moonMat} />
+      </mesh>
+      {/* Subtle glow rim */}
+      <mesh ref={glowRef}>
+        <sphereGeometry args={[0.95, 24, 24]} />
+        <primitive object={glowMat} />
+      </mesh>
+    </group>
   );
 }
 

@@ -1,7 +1,7 @@
 import { Suspense, lazy } from 'react';
 import { motion } from 'framer-motion';
 import { Canvas } from '@react-three/fiber';
-import { Github, Linkedin, Download, ChevronDown, MapPin, Send } from 'lucide-react';
+import { Github, Linkedin, Download, ChevronDown, MapPin, Send, ArrowRight } from 'lucide-react';
 import { useThemeStore } from '../store/themeStore';
 import { useTypewriter } from '../hooks/useTypewriter';
 import { useReducedMotion } from '../hooks/useReducedMotion';
@@ -17,11 +17,10 @@ const TYPEWRITER_TEXTS = [
   'Spring Boot 3.x Engineer',
   'React 19 Developer',
   'IoT & ThingsBoard Specialist',
-  'Patent Holder',
 ];
 
 // Animated letter-by-letter name
-function AnimatedName() {
+function AnimatedName({ isDay }) {
   const name = 'ROMEN HALDER';
   return (
     <h1
@@ -30,7 +29,9 @@ function AnimatedName() {
         fontSize: 'clamp(2.2rem, 6.5vw, 5.5rem)',
         whiteSpace: 'nowrap',
         lineHeight: 1,
-        textShadow: '0 0 30px rgba(14, 165, 233, 0.4), 0 0 60px rgba(199, 125, 255, 0.2)',
+        textShadow: isDay
+          ? 'none'
+          : '0 0 30px rgba(14, 165, 233, 0.4), 0 0 60px rgba(199, 125, 255, 0.2)',
         marginBottom: '0.5rem',
       }}
       aria-label="Romen Halder"
@@ -54,10 +55,10 @@ export function Hero() {
   const { theme } = useThemeStore();
   const prefersReduced = useReducedMotion();
   const typedText = useTypewriter(TYPEWRITER_TEXTS, 75, 1800, 40);
-  const isOcean = theme === 'ocean';
+  const isDay = theme === 'ocean';
 
-  const overlayStyle = isOcean
-    ? 'linear-gradient(180deg, rgba(240,248,255,0.4) 0%, rgba(240,248,255,0.15) 50%, transparent 100%)'
+  const overlayStyle = isDay
+    ? 'linear-gradient(180deg, rgba(250,251,255,0.35) 0%, rgba(250,251,255,0.1) 50%, transparent 100%)'
     : 'linear-gradient(180deg, rgba(3,0,28,0.6) 0%, rgba(3,0,28,0.25) 50%, transparent 100%)';
 
   return (
@@ -69,30 +70,30 @@ export function Hero() {
             camera={{ position: [0, 1.5, 5], fov: 60 }}
             frameloop="always"
             dpr={[1, Math.min(window.devicePixelRatio, 2)]}
-            style={{ background: isOcean ? '#87CEEB' : '#03001C' }}
+            style={{ background: isDay ? '#FAFBFF' : '#03001C' }}
           >
             <Suspense fallback={null}>
-              {isOcean ? <OceanBackground /> : <SpaceBackground />}
+              {isDay ? <OceanBackground /> : <SpaceBackground />}
             </Suspense>
           </Canvas>
         </div>
       )}
 
-      {/* Overlay for text readability */}
+      {/* Overlay */}
       <div
         className="absolute inset-0 z-10 pointer-events-none"
         style={{ background: overlayStyle }}
         aria-hidden="true"
       />
 
-      {/* Main Content — LEFT: text, RIGHT: large profile photo */}
+      {/* Main Content */}
       <div className="relative z-20 h-full flex items-center">
         <div className="max-w-7xl mx-auto w-full px-6">
           <div className="grid lg:grid-cols-2 gap-8 items-center">
 
-            {/* LEFT COLUMN — Name, Role, CTAs */}
+            {/* LEFT — Name, Role, CTAs */}
             <div className="text-center lg:text-left order-2 lg:order-1">
-              <AnimatedName />
+              <AnimatedName isDay={isDay} />
 
               {/* Subtitle */}
               <motion.p
@@ -120,7 +121,10 @@ export function Hero() {
               {/* Typewriter */}
               <motion.div
                 className="text-xl md:text-2xl font-space font-bold mb-8 h-9"
-                style={{ color: 'var(--color-accent1)', textShadow: '0 0 10px var(--color-accent1)' }}
+                style={{
+                  color: 'var(--color-accent1)',
+                  textShadow: isDay ? 'none' : '0 0 10px var(--color-accent1)',
+                }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.75 }}
@@ -136,33 +140,37 @@ export function Hero() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.9 }}
               >
-                {/* View Projects — neon cyan */}
+                {/* View Projects */}
                 <button
                   onClick={() => scrollToSection('projects')}
-                  className="hero-btn-neon px-7 py-3 rounded-full font-bold text-sm uppercase tracking-wider cursor-pointer"
+                  className="hero-btn-neon hero-btn-primary px-7 py-3 rounded-full font-bold text-sm uppercase tracking-wider cursor-pointer flex items-center gap-2"
                   style={{
-                    background: 'rgba(14, 165, 233, 0.08)',
-                    color: '#0EA5E9',
-                    border: '1.5px solid rgba(14, 165, 233, 0.6)',
-                    boxShadow: '0 0 12px rgba(14, 165, 233, 0.3), inset 0 0 12px rgba(14, 165, 233, 0.08)',
-                    textShadow: '0 0 8px rgba(14,165,233,0.5)',
+                    background: isDay ? 'linear-gradient(135deg, #2563EB, #0EA5E9)' : 'rgba(14, 165, 233, 0.08)',
+                    color: isDay ? '#fff' : '#0EA5E9',
+                    border: isDay ? 'none' : '1.5px solid rgba(14, 165, 233, 0.6)',
+                    boxShadow: isDay
+                      ? '0 4px 14px rgba(37,99,235,0.3), 0 1px 3px rgba(0,0,0,0.08)'
+                      : '0 0 12px rgba(14, 165, 233, 0.3), inset 0 0 12px rgba(14, 165, 233, 0.08)',
+                    textShadow: isDay ? 'none' : '0 0 8px rgba(14,165,233,0.5)',
                     transition: 'all 0.3s ease',
                   }}
                   aria-label="View projects"
                 >
-                  View Projects
+                  View Projects <ArrowRight size={14} />
                 </button>
 
-                {/* Contact Me — neon purple */}
+                {/* Contact Me */}
                 <button
                   onClick={() => scrollToSection('contact')}
-                  className="hero-btn-neon px-7 py-3 rounded-full font-bold text-sm uppercase tracking-wider cursor-pointer flex items-center gap-2"
+                  className="hero-btn-neon hero-btn-secondary px-7 py-3 rounded-full font-bold text-sm uppercase tracking-wider cursor-pointer flex items-center gap-2"
                   style={{
-                    background: 'rgba(199, 125, 255, 0.08)',
-                    color: '#C77DFF',
-                    border: '1.5px solid rgba(199, 125, 255, 0.6)',
-                    boxShadow: '0 0 12px rgba(199, 125, 255, 0.3), inset 0 0 12px rgba(199, 125, 255, 0.08)',
-                    textShadow: '0 0 8px rgba(199,125,255,0.5)',
+                    background: isDay ? '#fff' : 'rgba(199, 125, 255, 0.08)',
+                    color: isDay ? '#2563EB' : '#C77DFF',
+                    border: isDay ? '1.5px solid rgba(37,99,235,0.25)' : '1.5px solid rgba(199, 125, 255, 0.6)',
+                    boxShadow: isDay
+                      ? '0 2px 8px rgba(37,99,235,0.08)'
+                      : '0 0 12px rgba(199, 125, 255, 0.3), inset 0 0 12px rgba(199, 125, 255, 0.08)',
+                    textShadow: isDay ? 'none' : '0 0 8px rgba(199,125,255,0.5)',
                     transition: 'all 0.3s ease',
                   }}
                   aria-label="Contact me"
@@ -170,7 +178,7 @@ export function Hero() {
                   <Send size={14} /> Contact Me
                 </button>
 
-                {/* Download CV — glass */}
+                {/* Download CV */}
                 <a
                   href="/resume.pdf"
                   download="Romen_Halder_Resume.pdf"
@@ -202,7 +210,6 @@ export function Hero() {
                   <Linkedin size={15} /> LinkedIn
                 </a>
 
-                {/* Availability */}
                 <div className="flex items-center gap-2 text-xs font-medium ml-1">
                   <span
                     className="w-2 h-2 rounded-full"
@@ -213,7 +220,7 @@ export function Hero() {
               </motion.div>
             </div>
 
-            {/* RIGHT COLUMN — Large Profile Photo */}
+            {/* RIGHT — Profile Photo */}
             <div className="flex items-center justify-center order-1 lg:order-2">
               <motion.div
                 initial={{ opacity: 0, scale: 0.75, y: 30 }}
@@ -234,17 +241,6 @@ export function Hero() {
         </p>
         <ChevronDown size={20} className="scroll-indicator" style={{ color: 'var(--color-accent1)' }} />
       </div>
-
-      {/* Neon button hover style */}
-      <style>{`
-        .hero-btn-neon:hover {
-          filter: brightness(1.3);
-          transform: translateY(-1px);
-        }
-        .hero-btn-neon:active {
-          transform: translateY(0);
-        }
-      `}</style>
     </section>
   );
 }
