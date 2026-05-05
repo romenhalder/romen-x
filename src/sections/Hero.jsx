@@ -58,7 +58,7 @@ export function Hero() {
   const isDay = theme === 'ocean';
 
   const overlayStyle = isDay
-    ? 'linear-gradient(180deg, rgba(250,251,255,0.35) 0%, rgba(250,251,255,0.1) 50%, transparent 100%)'
+    ? 'linear-gradient(180deg, rgba(250,250,248,0.3) 0%, rgba(250,250,248,0.08) 50%, transparent 100%)'
     : 'linear-gradient(180deg, rgba(3,0,28,0.6) 0%, rgba(3,0,28,0.25) 50%, transparent 100%)';
 
   return (
@@ -70,7 +70,7 @@ export function Hero() {
             camera={{ position: [0, 1.5, 5], fov: 60 }}
             frameloop="always"
             dpr={[1, Math.min(window.devicePixelRatio, 2)]}
-            style={{ background: isDay ? '#FAFBFF' : '#03001C' }}
+            style={{ background: isDay ? '#F5F0E8' : '#03001C' }}
           >
             <Suspense fallback={null}>
               {isDay ? <OceanBackground /> : <SpaceBackground />}
@@ -145,11 +145,11 @@ export function Hero() {
                   onClick={() => scrollToSection('projects')}
                   className="hero-btn-neon hero-btn-primary px-7 py-3 rounded-full font-bold text-sm uppercase tracking-wider cursor-pointer flex items-center gap-2"
                   style={{
-                    background: isDay ? 'linear-gradient(135deg, #2563EB, #0EA5E9)' : 'rgba(14, 165, 233, 0.08)',
+                    background: isDay ? 'linear-gradient(135deg, #1E6091, #3D8EBF)' : 'rgba(14, 165, 233, 0.08)',
                     color: isDay ? '#fff' : '#0EA5E9',
                     border: isDay ? 'none' : '1.5px solid rgba(14, 165, 233, 0.6)',
                     boxShadow: isDay
-                      ? '0 4px 14px rgba(37,99,235,0.3), 0 1px 3px rgba(0,0,0,0.08)'
+                      ? '0 4px 14px rgba(30,96,145,0.25), 0 1px 3px rgba(0,0,0,0.06)'
                       : '0 0 12px rgba(14, 165, 233, 0.3), inset 0 0 12px rgba(14, 165, 233, 0.08)',
                     textShadow: isDay ? 'none' : '0 0 8px rgba(14,165,233,0.5)',
                     transition: 'all 0.3s ease',
@@ -164,11 +164,11 @@ export function Hero() {
                   onClick={() => scrollToSection('contact')}
                   className="hero-btn-neon hero-btn-secondary px-7 py-3 rounded-full font-bold text-sm uppercase tracking-wider cursor-pointer flex items-center gap-2"
                   style={{
-                    background: isDay ? '#fff' : 'rgba(199, 125, 255, 0.08)',
-                    color: isDay ? '#2563EB' : '#C77DFF',
-                    border: isDay ? '1.5px solid rgba(37,99,235,0.25)' : '1.5px solid rgba(199, 125, 255, 0.6)',
+                    background: isDay ? 'rgba(255,255,253,0.9)' : 'rgba(199, 125, 255, 0.08)',
+                    color: isDay ? '#1E6091' : '#C77DFF',
+                    border: isDay ? '1.5px solid rgba(30,96,145,0.2)' : '1.5px solid rgba(199, 125, 255, 0.6)',
                     boxShadow: isDay
-                      ? '0 2px 8px rgba(37,99,235,0.08)'
+                      ? '0 2px 8px rgba(30,96,145,0.06)'
                       : '0 0 12px rgba(199, 125, 255, 0.3), inset 0 0 12px rgba(199, 125, 255, 0.08)',
                     textShadow: isDay ? 'none' : '0 0 8px rgba(199,125,255,0.5)',
                     transition: 'all 0.3s ease',
