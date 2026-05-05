@@ -13,9 +13,9 @@ export function ProfilePhoto3D({ size = 320 }) {
   const isDay = theme === 'ocean';
 
   // Colors per theme
-  const accent = isDay ? '#2563EB' : '#C77DFF';
-  const accent2 = isDay ? '#0EA5E9' : '#A855F7';
-  const glowColor = isDay ? 'rgba(37,99,235,' : 'rgba(199,125,255,';
+  const accent = isDay ? '#1E6091' : '#C77DFF';
+  const accent2 = isDay ? '#D4A04A' : '#A855F7';
+  const glowColor = isDay ? 'rgba(30,96,145,' : 'rgba(199,125,255,';
 
   useEffect(() => {
     import('../../assets/profile-photo.jpg')
@@ -126,10 +126,10 @@ export function ProfilePhoto3D({ size = 320 }) {
           position: 'relative',
           zIndex: 2,
           border: isDay
-            ? `2px solid rgba(37,99,235,0.15)`
+            ? `2px solid rgba(30,96,145,0.12)`
             : `3px solid ${glowColor}0.6)`,
           boxShadow: isDay
-            ? `0 8px 40px rgba(37,99,235,0.12), 0 2px 8px rgba(0,0,0,0.06)`
+            ? `0 8px 40px rgba(30,96,145,0.10), 0 2px 8px rgba(0,0,0,0.05)`
             : `0 0 20px ${glowColor}0.5), 0 0 40px ${glowColor}0.3), 0 0 80px ${glowColor}0.15), inset 0 0 30px ${glowColor}0.1)`,
           animation: isDay ? 'heroPhotoFloatDay 5s ease-in-out infinite' : 'heroPhotoFloatNight 5s ease-in-out infinite',
           transition: 'transform 0.4s ease, box-shadow 0.4s ease, border-color 0.6s ease',
@@ -158,7 +158,7 @@ export function ProfilePhoto3D({ size = 320 }) {
               alignItems: 'center',
               justifyContent: 'center',
               background: isDay
-                ? 'linear-gradient(135deg, #E8F0FE, #DBEAFE)'
+                ? 'linear-gradient(135deg, #EDE8DC, #DAD4C8)'
                 : 'radial-gradient(circle at 40% 35%, #1a2a4a, #071220)',
               position: 'relative',
             }}
