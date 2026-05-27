@@ -22,17 +22,17 @@ export function ThemeToggle() {
         gap: '8px',
         padding: '8px 16px',
         borderRadius: '999px',
-        border: isOcean ? '1px solid rgba(14,165,233,0.4)' : '1px solid rgba(199,125,255,0.4)',
-        background: isOcean ? 'rgba(255,255,255,0.85)' : 'rgba(10,5,40,0.85)',
+        border: isOcean ? '1px solid rgba(232,69,69,0.40)' : '1px solid rgba(199,125,255,0.4)',
+        background: isOcean ? 'rgba(18,18,28,0.92)' : 'rgba(10,5,40,0.85)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
-        color: isOcean ? '#0EA5E9' : '#C77DFF',
+        color: isOcean ? '#E84545' : '#C77DFF',
         cursor: 'pointer',
         fontFamily: 'Inter, sans-serif',
         fontSize: '13px',
         fontWeight: 600,
         boxShadow: isOcean
-          ? '0 4px 20px rgba(14,165,233,0.2)'
+          ? '0 4px 20px rgba(232,69,69,0.28)'
           : '0 4px 20px rgba(199,125,255,0.25)',
         minWidth: '44px',
       }}
