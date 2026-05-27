@@ -4,7 +4,7 @@ import experience from '../data/experience.json';
 
 export function Experience() {
   return (
-    <section id="experience" className="section py-20" style={{ background: 'var(--color-surface)' }}>
+    <section id="experience" className="section section-alt py-20">
       <div className="max-w-7xl mx-auto px-6">
         <SectionHeading
           title="Work Experience"
