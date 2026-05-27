@@ -3,26 +3,28 @@
 @tailwind utilities;
 
 /* ========================
-   THEME A: HIMALAYAN CLOUD (warm, elegant, sunrise-inspired)
+   THEME A: CRIMSON NOIR (dark, bold, professional — red accent)
    ======================== */
 :root,
 [data-theme="ocean"] {
-  --color-bg: #FAFAF8;
-  --color-surface: rgba(255, 255, 253, 0.95);
-  --color-accent1: #1E6091;
-  --color-accent2: #D4A04A;
-  --color-accent3: #3D8EBF;
-  --color-text-primary: #1A2332;
-  --color-text-secondary: #5A6B7E;
-  --color-card-bg: rgba(255, 255, 253, 0.82);
-  --shadow-glow: 0 4px 24px rgba(30, 96, 145, 0.08), 0 1px 4px rgba(0,0,0,0.05);
-  --gradient-accent: linear-gradient(135deg, #1E6091, #3D8EBF, #D4A04A);
-  --border-accent: rgba(30, 96, 145, 0.18);
-  --color-glass-border: rgba(30, 96, 145, 0.10);
-  --nav-bg: rgba(250, 250, 248, 0.90);
-  --nav-border: rgba(30, 96, 145, 0.06);
-  --skeleton-base: rgba(30, 96, 145, 0.04);
-  --skeleton-shine: rgba(212, 160, 74, 0.10);
+  --color-bg: #0B0B12;
+  --color-surface: rgba(14, 14, 22, 0.97);
+  --color-accent1: #E84545;
+  --color-accent2: #FF6B6B;
+  --color-accent3: #FF9550;
+  --color-text-primary: #F2F2F8;
+  --color-text-secondary: #8B8BA5;
+  --color-card-bg: rgba(18, 18, 28, 0.92);
+  --shadow-glow: 0 8px 40px rgba(232, 69, 69, 0.25), 0 2px 8px rgba(0,0,0,0.5);
+  --gradient-accent: linear-gradient(135deg, #E84545 0%, #FF6B6B 60%, #FF9550 100%);
+  --gradient-hero: linear-gradient(135deg, #E84545 0%, #FF6B6B 100%);
+  --border-accent: rgba(232, 69, 69, 0.22);
+  --color-glass-border: rgba(232, 69, 69, 0.12);
+  --nav-bg: rgba(11, 11, 18, 0.97);
+  --nav-border: rgba(232, 69, 69, 0.10);
+  --skeleton-base: rgba(232, 69, 69, 0.06);
+  --skeleton-shine: rgba(232, 69, 69, 0.15);
+  --color-section-alt: #0E0E18;
 }
 
 /* ========================
@@ -92,7 +94,7 @@ canvas, #cursor-dot, #cursor-ring, #scroll-progress, .no-transition, .no-transit
   border: 1px solid var(--color-glass-border);
 }
 [data-theme="ocean"] .glass {
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(30,96,145,0.04);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35), 0 6px 24px rgba(232,69,69,0.08);
 }
 .glass-strong {
   background: var(--color-card-bg);
@@ -101,7 +103,7 @@ canvas, #cursor-dot, #cursor-ring, #scroll-progress, .no-transition, .no-transit
   border: 1px solid var(--color-glass-border);
 }
 [data-theme="ocean"] .glass-strong {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(30,96,145,0.05);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.45), 0 12px 40px rgba(232,69,69,0.10);
 }
 .glass-nav {
   background: var(--nav-bg);
@@ -110,7 +112,7 @@ canvas, #cursor-dot, #cursor-ring, #scroll-progress, .no-transition, .no-transit
   border-bottom: 1px solid var(--nav-border);
 }
 [data-theme="ocean"] .glass-nav {
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  box-shadow: 0 1px 0 rgba(232,69,69,0.08), 0 4px 20px rgba(0,0,0,0.3);
 }
 
 /* ========================
@@ -132,8 +134,8 @@ canvas, #cursor-dot, #cursor-ring, #scroll-progress, .no-transition, .no-transit
   transform: translateY(-4px);
 }
 [data-theme="ocean"] .card-glow:hover {
-  box-shadow: 0 4px 20px rgba(30, 96, 145, 0.10), 0 1px 3px rgba(0,0,0,0.05);
-  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(232, 69, 69, 0.28), 0 2px 8px rgba(0,0,0,0.4);
+  transform: translateY(-4px);
 }
 
 /* ========================
@@ -149,22 +151,21 @@ canvas, #cursor-dot, #cursor-ring, #scroll-progress, .no-transition, .no-transit
    CUSTOM CURSOR
    ======================== */
 #cursor-dot {
-  position: fixed; top: 0; left: 0; width: 10px; height: 10px;
+  position: fixed; top: 0; left: 0; width: 8px; height: 8px;
   background: var(--color-accent1); border-radius: 50%;
   pointer-events: none; z-index: 99999;
   transform: translate(-50%, -50%);
-  mix-blend-mode: multiply;
 }
 #cursor-ring {
-  position: fixed; top: 0; left: 0; width: 30px; height: 30px;
-  border: 2px solid var(--color-accent1); border-radius: 50%;
+  position: fixed; top: 0; left: 0; width: 28px; height: 28px;
+  border: 1.5px solid var(--color-accent1); border-radius: 50%;
   pointer-events: none; z-index: 99998;
-  transform: translate(-50%, -50%); opacity: 0.7;
+  transform: translate(-50%, -50%); opacity: 0.65;
 }
 #cursor-dot.hovering { transform: translate(-50%, -50%) scale(0); }
 #cursor-ring.hovering {
-  transform: translate(-50%, -50%) scale(1.5);
-  background: color-mix(in srgb, var(--color-accent1) 25%, transparent);
+  transform: translate(-50%, -50%) scale(1.6);
+  background: color-mix(in srgb, var(--color-accent1) 18%, transparent);
 }
 
 /* ========================
@@ -235,8 +236,20 @@ canvas, #cursor-dot, #cursor-ring, #scroll-progress, .no-transition, .no-transit
 /* ========================
    SELECT OPTION FIX
    ======================== */
-[data-theme="ocean"] select option { background: #FAFBFF; color: #0F172A; }
+[data-theme="ocean"] select option { background: #121220; color: #F2F2F8; }
 [data-theme="space"] select option { background: #0D0B2B; color: #F0E6FF; }
+
+/* Day-mode form input overrides */
+[data-theme="ocean"] .form-input {
+  background: rgba(18,18,28,0.95);
+  border: 1.5px solid rgba(232,69,69,0.18);
+  color: #F2F2F8;
+}
+[data-theme="ocean"] .form-input:focus {
+  border-color: #E84545;
+  box-shadow: 0 0 0 3px rgba(232,69,69,0.14);
+}
+[data-theme="ocean"] .form-input::placeholder { color: #5A5A72; opacity: 1; }
 
 /* ========================
    BENTO GRID
@@ -393,37 +406,61 @@ canvas, #cursor-dot, #cursor-ring, #scroll-progress, .no-transition, .no-transit
 /* ========================
    HERO BUTTONS — THEME AWARE
    ======================== */
-.hero-btn-neon {
-  transition: all 0.3s ease !important;
-}
-.hero-btn-neon:hover {
-  transform: translateY(-2px);
-}
-.hero-btn-neon:active {
-  transform: translateY(0);
-}
+.hero-btn-neon { transition: all 0.3s ease !important; }
+.hero-btn-neon:hover { transform: translateY(-2px); }
+.hero-btn-neon:active { transform: translateY(0); }
 
-/* Day mode — solid, elevated buttons (Himalayan) */
+/* Day mode — Crimson Noir buttons */
 [data-theme="ocean"] .hero-btn-primary {
-  background: linear-gradient(135deg, #1E6091, #3D8EBF) !important;
+  background: linear-gradient(135deg, #E84545 0%, #FF6B6B 100%) !important;
   color: #fff !important;
   border: none !important;
-  box-shadow: 0 4px 14px rgba(30,96,145,0.25), 0 1px 3px rgba(0,0,0,0.06) !important;
+  box-shadow: 0 4px 22px rgba(232,69,69,0.50), 0 1px 4px rgba(0,0,0,0.2) !important;
   text-shadow: none !important;
+  letter-spacing: 0.05em;
 }
 [data-theme="ocean"] .hero-btn-primary:hover {
-  box-shadow: 0 6px 22px rgba(30,96,145,0.35), 0 2px 6px rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(232,69,69,0.65), 0 2px 8px rgba(0,0,0,0.3) !important;
   transform: translateY(-3px);
+  filter: brightness(1.1);
 }
 [data-theme="ocean"] .hero-btn-secondary {
-  background: rgba(255,255,253,0.9) !important;
-  color: #1E6091 !important;
-  border: 1.5px solid rgba(30,96,145,0.2) !important;
-  box-shadow: 0 2px 8px rgba(30,96,145,0.06) !important;
+  background: rgba(232,69,69,0.07) !important;
+  color: #E84545 !important;
+  border: 1.5px solid rgba(232,69,69,0.45) !important;
+  box-shadow: none !important;
   text-shadow: none !important;
 }
 [data-theme="ocean"] .hero-btn-secondary:hover {
-  border-color: #1E6091 !important;
-  box-shadow: 0 4px 16px rgba(30,96,145,0.12) !important;
-  transform: translateY(-2px);
+  background: rgba(232,69,69,0.14) !important;
+  border-color: #E84545 !important;
+  box-shadow: 0 4px 22px rgba(232,69,69,0.28) !important;
+  transform: translateY(-3px);
 }
+
+/* Day mode — section alt backgrounds */
+[data-theme="ocean"] .section-alt { background: var(--color-section-alt) !important; }
+
+/* ========================
+   3D PROFILE RING ANIMATIONS
+   ======================== */
+@keyframes ring3DOrbit {
+  from { transform: perspective(700px) rotateX(62deg) rotateZ(0deg); }
+  to   { transform: perspective(700px) rotateX(62deg) rotateZ(360deg); }
+}
+@keyframes ring3DOrbitRev {
+  from { transform: perspective(700px) rotateX(55deg) rotateZ(0deg); }
+  to   { transform: perspective(700px) rotateX(55deg) rotateZ(-360deg); }
+}
+.ring-orbit   { animation: ring3DOrbit    16s linear infinite; }
+.ring-orbit-r { animation: ring3DOrbitRev 11s linear infinite; }
+
+/* ========================
+   TECH TICKER
+   ======================== */
+@keyframes tickerScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-track { animation: tickerScroll 24s linear infinite; }
+.ticker-track:hover { animation-play-state: paused; }
