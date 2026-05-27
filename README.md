@@ -6,7 +6,7 @@ A production-ready, highly interactive personal portfolio featuring **Two Advanc
 - 🌊 **Ocean Day Theme (Light):** Bright white/sky-blue aesthetic, animated wave surface, floating foam/bubbles, and mouse parallax.
 - 🌌 **Deep Space Night Theme (Dark):** 3D Earth with procedural continents/clouds, orbiting Moon with craters, low-poly floating astronaut, and shooting stars.
 - 📸 **3D Profile Photo Avatar:** A unique 3D component with orbiting rings and particles that displays your photo or a procedural "RH" placeholder. (Place your photo at `src/assets/profile-photo.jpg`).
-- 🖼️ **Project Thumbnails & Screenshot Uploads:** Project cards now display a hero thumbnail. An **Admin Mode (PIN protected)** allows direct drag-and-drop uploading of prototype screenshots for each project.
+- 🖼️ **Project Thumbnails & Screenshot Uploads:** Project cards now display a hero thumbnail.An **Admin Mode (PIN protected)** allows direct drag-and-drop uploading of prototype screenshots for each project.
 - 🧑‍💻 **Detail Modal:** Comprehensive project modal with tabs for Screenshot Gallery, Features, Tech Deep Dive, and Architecture diagrams.
 
 ---
