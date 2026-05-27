@@ -3,18 +3,16 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
 /**
- * Himalayan Cloud Day Mode — Cinematic sunrise landscape
- * Layered mountain silhouettes + drifting clouds + mist + sun rays + dust particles
+ * CRIMSON NOIR — Professional Dark Day Theme 3D Background
+ * Dark void + floating red particles + abstract wireframe rings + subtle grid
  */
 
 // =========================================================
-// SUNRISE SKY DOME — warm golden-to-blue gradient
+// DARK VOID BACKGROUND — near-black with subtle gradient
 // =========================================================
-function HimalayanSky() {
+function DarkVoid() {
   const mat = useMemo(() => new THREE.ShaderMaterial({
-    uniforms: {
-      uTime: { value: 0 },
-    },
+    uniforms: { uTime: { value: 0 } },
     vertexShader: `
       varying vec2 vUv;
       void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
@@ -23,33 +21,30 @@ function HimalayanSky() {
       uniform float uTime;
       varying vec2 vUv;
       void main() {
-        float t = pow(vUv.y, 0.55);
-        // Bottom: warm golden horizon
-        vec3 horizon = vec3(0.98, 0.88, 0.72);
-        // Mid: soft pink blush
-        vec3 blush = vec3(0.90, 0.82, 0.85);
-        // Upper: pale blue sky
-        vec3 sky = vec3(0.78, 0.88, 0.96);
-        // Top: deeper blue
-        vec3 zenith = vec3(0.62, 0.78, 0.94);
-        
-        vec3 col;
-        if(t < 0.25) col = mix(horizon, blush, t * 4.0);
-        else if(t < 0.55) col = mix(blush, sky, (t - 0.25) / 0.3);
-        else col = mix(sky, zenith, (t - 0.55) / 0.45);
-        
-        // Subtle sun glow near horizon center
-        float sunX = 0.5;
-        float sunY = 0.18;
-        float sunDist = distance(vec2(vUv.x, vUv.y * 0.5 + 0.25), vec2(sunX, sunY));
-        float sunGlow = exp(-sunDist * sunDist * 12.0) * 0.35;
-        col += vec3(1.0, 0.92, 0.7) * sunGlow;
-        
-        gl_FragColor = vec4(col, 1.0);
+        // Very dark charcoal gradient — bottom slightly lighter
+        float t = vUv.y;
+        vec3 bottom = vec3(0.075, 0.050, 0.065); // dark charcoal-red
+        vec3 top    = vec3(0.030, 0.020, 0.030); // near-black
+        vec3 col    = mix(bottom, top, pow(t, 0.7));
+
+        // Subtle radial vignette glow at center-bottom
+        float cx = vUv.x - 0.5;
+        float cy = vUv.y - 0.08;
+        float d  = sqrt(cx*cx + cy*cy*0.4);
+        float glow = exp(-d * d * 4.5) * 0.12;
+        col += vec3(0.55, 0.08, 0.08) * glow;
+
+        // Breathing pulse
+        float breathe = sin(uTime * 0.20) * 0.008;
+        col += breathe;
+
+        gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
       }
     `,
     side: THREE.BackSide,
   }), []);
+
+  useFrame(({ clock }) => { mat.uniforms.uTime.value = clock.getElapsedTime(); });
 
   return (
     <mesh>
@@ -60,291 +55,28 @@ function HimalayanSky() {
 }
 
 // =========================================================
-// MOUNTAIN SILHOUETTES — 3 layered ranges with depth
+// CRIMSON PARTICLE FIELD — floating red glowing motes
 // =========================================================
-function MountainRange({ zPos, yBase, height, color, opacity, scale }) {
-  const mat = useMemo(() => new THREE.ShaderMaterial({
-    uniforms: {
-      uColor: { value: new THREE.Color(color) },
-      uOpacity: { value: opacity },
-    },
-    transparent: true,
-    side: THREE.DoubleSide,
-    depthWrite: false,
-    vertexShader: `
-      varying vec2 vUv;
-      void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
-    `,
-    fragmentShader: `
-      uniform vec3 uColor;
-      uniform float uOpacity;
-      varying vec2 vUv;
-      
-      // Simple hash for mountain profile
-      float hash(float n) { return fract(sin(n) * 43758.5453); }
-      float noise1D(float x) {
-        float i = floor(x);
-        float f = fract(x);
-        f = f * f * (3.0 - 2.0 * f);
-        return mix(hash(i), hash(i + 1.0), f);
-      }
-      
-      void main() {
-        // Build jagged mountain profile
-        float x = vUv.x;
-        float peak = 0.0;
-        peak += noise1D(x * 3.0) * 0.45;
-        peak += noise1D(x * 7.0) * 0.25;
-        peak += noise1D(x * 15.0) * 0.12;
-        peak += noise1D(x * 30.0) * 0.06;
-        
-        // Mountain shape: solid below the peak line
-        float mountainY = peak;
-        float pixelY = vUv.y;
-        
-        if(pixelY > mountainY) discard;
-        
-        // Atmospheric fading at bottom
-        float bottomFade = smoothstep(0.0, 0.08, pixelY);
-        // Snow caps — brighten peaks
-        float snowLine = mountainY - 0.06;
-        float snow = smoothstep(snowLine, mountainY, pixelY) * 0.25;
-        vec3 col = uColor + vec3(snow);
-        
-        gl_FragColor = vec4(col, uOpacity * bottomFade);
-      }
-    `,
-  }), [color, opacity]);
-
-  return (
-    <mesh position={[0, yBase, zPos]} scale={[scale, height, 1]}>
-      <planeGeometry args={[80, 1, 1, 1]} />
-      <primitive object={mat} />
-    </mesh>
-  );
-}
-
-function Mountains() {
-  return (
-    <>
-      {/* Far range — faint, pale blue-gray */}
-      <MountainRange zPos={-35} yBase={0.5} height={8} color="#9AAEC4" opacity={0.4} scale={1.2} />
-      {/* Mid range — medium depth */}
-      <MountainRange zPos={-25} yBase={-0.5} height={7} color="#6B8BA8" opacity={0.55} scale={1.1} />
-      {/* Near range — darkest, most detailed */}
-      <MountainRange zPos={-15} yBase={-1.5} height={6} color="#3D5A73" opacity={0.7} scale={1.0} />
-    </>
-  );
-}
-
-// =========================================================
-// CLOUDS — multi-layered drifting with parallax
-// =========================================================
-function CloudLayer({ yPos, zPos, speed, opacity, scale, count }) {
-  const groupRef = useRef();
-
-  const clouds = useMemo(() => {
-    const arr = [];
-    for (let i = 0; i < count; i++) {
-      arr.push({
-        x: (Math.random() - 0.5) * 60,
-        y: yPos + (Math.random() - 0.5) * 1.5,
-        z: zPos + (Math.random() - 0.5) * 4,
-        scaleX: 3 + Math.random() * 6,
-        scaleY: 0.8 + Math.random() * 1.2,
-        opacity: opacity * (0.5 + Math.random() * 0.5),
-        phase: Math.random() * 100,
-      });
-    }
-    return arr;
-  }, [yPos, zPos, count, opacity]);
-
-  const cloudMat = useMemo(() => new THREE.ShaderMaterial({
-    uniforms: {
-      uOpacity: { value: 1.0 },
-    },
-    transparent: true,
-    depthWrite: false,
-    side: THREE.DoubleSide,
-    vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-    fragmentShader: `
-      uniform float uOpacity;
-      varying vec2 vUv;
-      void main() {
-        vec2 center = vec2(0.5, 0.5);
-        float d = distance(vUv, center);
-        
-        // Elliptical soft cloud shape
-        float dx = (vUv.x - 0.5) * 2.0;
-        float dy = (vUv.y - 0.5) * 3.0;
-        float r = sqrt(dx * dx + dy * dy);
-        float alpha = smoothstep(1.0, 0.3, r) * uOpacity;
-        
-        // Warm white cloud color
-        vec3 col = vec3(1.0, 0.98, 0.96);
-        // Subtle golden tint on bottom from sunrise
-        col = mix(col, vec3(1.0, 0.94, 0.85), smoothstep(0.3, 0.7, vUv.y) * 0.3);
-        
-        gl_FragColor = vec4(col, alpha);
-      }
-    `,
-  }), []);
-
-  useFrame(({ clock: c }) => {
-    if (!groupRef.current) return;
-    const t = c.getElapsedTime();
-    groupRef.current.children.forEach((child, i) => {
-      const cloud = clouds[i];
-      if (!cloud) return;
-      // Drift horizontally — infinite loop
-      let x = cloud.x + t * speed + cloud.phase;
-      x = ((x + 30) % 60) - 30;
-      child.position.x = x;
-      // Gentle vertical bob
-      child.position.y = cloud.y + Math.sin(t * 0.2 + cloud.phase) * 0.15;
-    });
-  });
-
-  return (
-    <group ref={groupRef}>
-      {clouds.map((c, i) => (
-        <mesh key={i} position={[c.x, c.y, c.z]} scale={[c.scaleX * scale, c.scaleY * scale, 1]}>
-          <planeGeometry args={[1, 1]} />
-          <primitive object={cloudMat.clone()} />
-        </mesh>
-      ))}
-    </group>
-  );
-}
-
-function Clouds() {
-  return (
-    <>
-      {/* Background clouds — slow, faint, small */}
-      <CloudLayer yPos={4} zPos={-28} speed={0.08} opacity={0.2} scale={1.0} count={8} />
-      {/* Mid clouds — medium speed */}
-      <CloudLayer yPos={2.5} zPos={-18} speed={0.15} opacity={0.35} scale={1.3} count={10} />
-      {/* Foreground clouds — faster, more opaque, larger */}
-      <CloudLayer yPos={1.0} zPos={-8} speed={0.25} opacity={0.3} scale={1.8} count={7} />
-      {/* Low mist layer */}
-      <CloudLayer yPos={-1.5} zPos={-12} speed={0.1} opacity={0.15} scale={2.5} count={6} />
-    </>
-  );
-}
-
-// =========================================================
-// MIST / FOG BETWEEN MOUNTAIN LAYERS
-// =========================================================
-function MistLayer({ yPos, zPos, opacity }) {
-  const mat = useMemo(() => new THREE.ShaderMaterial({
-    uniforms: { uTime: { value: 0 } },
-    transparent: true,
-    depthWrite: false,
-    side: THREE.DoubleSide,
-    vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-    fragmentShader: `
-      uniform float uTime;
-      varying vec2 vUv;
-      void main() {
-        float edgeFade = smoothstep(0.0, 0.3, vUv.x) * smoothstep(1.0, 0.7, vUv.x);
-        float vertFade = smoothstep(0.0, 0.4, vUv.y) * smoothstep(1.0, 0.6, vUv.y);
-        
-        // Wispy wave pattern
-        float wave = sin(vUv.x * 8.0 + uTime * 0.15) * 0.5 + 0.5;
-        wave *= sin(vUv.x * 3.0 - uTime * 0.08) * 0.5 + 0.5;
-        
-        float alpha = edgeFade * vertFade * wave * ${opacity.toFixed(2)};
-        vec3 col = vec3(0.95, 0.95, 0.97);
-        gl_FragColor = vec4(col, alpha);
-      }
-    `,
-  }), [opacity]);
-
-  useFrame(({ clock: c }) => { mat.uniforms.uTime.value = c.getElapsedTime(); });
-
-  return (
-    <mesh position={[0, yPos, zPos]} scale={[60, 3, 1]}>
-      <planeGeometry args={[1, 1]} />
-      <primitive object={mat} />
-    </mesh>
-  );
-}
-
-function Mist() {
-  return (
-    <>
-      <MistLayer yPos={0.5} zPos={-30} opacity={0.25} />
-      <MistLayer yPos={-0.5} zPos={-20} opacity={0.3} />
-      <MistLayer yPos={-1.0} zPos={-12} opacity={0.2} />
-    </>
-  );
-}
-
-// =========================================================
-// SUN RAYS — volumetric light beams
-// =========================================================
-function SunRays() {
-  const mat = useMemo(() => new THREE.ShaderMaterial({
-    uniforms: { uTime: { value: 0 } },
-    transparent: true,
-    depthWrite: false,
-    side: THREE.DoubleSide,
-    vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-    fragmentShader: `
-      uniform float uTime;
-      varying vec2 vUv;
-      void main() {
-        // Rays fan out from top-center
-        vec2 origin = vec2(0.5, 1.0);
-        vec2 dir = vUv - origin;
-        float angle = atan(dir.x, dir.y);
-        
-        // Create ray pattern
-        float rays = sin(angle * 12.0 + uTime * 0.1) * 0.5 + 0.5;
-        rays = pow(rays, 3.0);
-        
-        // Fade with distance from origin
-        float dist = length(dir);
-        float falloff = smoothstep(1.2, 0.0, dist);
-        
-        // Horizontal center bias
-        float centerBias = smoothstep(0.0, 0.3, vUv.x) * smoothstep(1.0, 0.7, vUv.x);
-        
-        float alpha = rays * falloff * centerBias * 0.06;
-        // Warm golden color
-        vec3 col = vec3(1.0, 0.94, 0.78);
-        gl_FragColor = vec4(col, alpha);
-      }
-    `,
-  }), []);
-
-  useFrame(({ clock: c }) => { mat.uniforms.uTime.value = c.getElapsedTime(); });
-
-  return (
-    <mesh position={[0, 3, -20]} scale={[40, 20, 1]}>
-      <planeGeometry args={[1, 1]} />
-      <primitive object={mat} />
-    </mesh>
-  );
-}
-
-// =========================================================
-// FLOATING DUST PARTICLES — golden motes in sunlight
-// =========================================================
-function DustParticles() {
-  const count = 200;
-  const { positions, sizes, phases } = useMemo(() => {
+function CrimsonParticles() {
+  const count = 300;
+  const { positions, sizes, phases, speeds } = useMemo(() => {
     const pos = new Float32Array(count * 3);
-    const sz = new Float32Array(count);
-    const ph = new Float32Array(count);
+    const sz  = new Float32Array(count);
+    const ph  = new Float32Array(count);
+    const sp  = new Float32Array(count);
     for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 30;
-      pos[i * 3 + 1] = -2 + Math.random() * 10;
-      pos[i * 3 + 2] = -3 + Math.random() * -20;
-      sz[i] = 0.6 + Math.random() * 1.2;
+      // Spread in a wide hemisphere in front of camera
+      const r   = 3 + Math.random() * 22;
+      const theta = Math.random() * Math.PI * 2;
+      const phi   = Math.random() * Math.PI * 0.7;
+      pos[i * 3]     = Math.sin(phi) * Math.cos(theta) * r;
+      pos[i * 3 + 1] = Math.cos(phi) * r * 0.5 - 3;
+      pos[i * 3 + 2] = -2 - Math.random() * 18;
+      sz[i] = 0.8 + Math.random() * 2.0;
       ph[i] = Math.random() * Math.PI * 2;
+      sp[i] = 0.4 + Math.random() * 0.8;
     }
-    return { positions: pos, sizes: sz, phases: ph };
+    return { positions: pos, sizes: sz, phases: ph, speeds: sp };
   }, []);
 
   const mat = useMemo(() => new THREE.ShaderMaterial({
@@ -354,40 +86,273 @@ function DustParticles() {
     vertexShader: `
       attribute float aSize;
       attribute float aPhase;
+      attribute float aSpeed;
       uniform float uTime;
       varying float vAlpha;
+      varying float vBright;
       void main() {
         vec3 pos = position;
-        pos.y += sin(uTime * 0.3 + aPhase) * 0.4;
-        pos.x += sin(uTime * 0.15 + aPhase * 1.5) * 0.3;
-        float flicker = 0.3 + 0.7 * sin(uTime * 0.6 + aPhase);
-        vAlpha = flicker * 0.3;
+        // Gentle drift
+        pos.y += sin(uTime * aSpeed * 0.35 + aPhase) * 0.6;
+        pos.x += sin(uTime * aSpeed * 0.22 + aPhase * 1.3) * 0.4;
+        float flicker = 0.4 + 0.6 * abs(sin(uTime * aSpeed * 0.5 + aPhase));
+        vAlpha  = flicker * 0.55;
+        vBright = flicker;
         gl_PointSize = aSize * flicker;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
       }
     `,
     fragmentShader: `
       varying float vAlpha;
+      varying float vBright;
       void main() {
         float d = distance(gl_PointCoord, vec2(0.5));
-        if(d > 0.5) discard;
+        if (d > 0.5) discard;
         float alpha = smoothstep(0.5, 0.0, d) * vAlpha;
-        gl_FragColor = vec4(0.95, 0.88, 0.65, alpha);
+        // Core: bright white-red, edge: deep red
+        vec3 core = vec3(1.0, 0.60, 0.60);
+        vec3 edge = vec3(0.55, 0.06, 0.06);
+        vec3 col  = mix(edge, core, smoothstep(0.4, 0.0, d) * vBright);
+        gl_FragColor = vec4(col, alpha);
       }
     `,
   }), []);
 
-  useFrame(({ clock: c }) => { mat.uniforms.uTime.value = c.getElapsedTime(); });
+  useFrame(({ clock }) => { mat.uniforms.uTime.value = clock.getElapsedTime(); });
 
   return (
     <points>
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
-        <bufferAttribute attach="attributes-aSize" count={count} array={sizes} itemSize={1} />
-        <bufferAttribute attach="attributes-aPhase" count={count} array={phases} itemSize={1} />
+        <bufferAttribute attach="attributes-aSize"    count={count} array={sizes}     itemSize={1} />
+        <bufferAttribute attach="attributes-aPhase"   count={count} array={phases}    itemSize={1} />
+        <bufferAttribute attach="attributes-aSpeed"   count={count} array={speeds}    itemSize={1} />
       </bufferGeometry>
       <primitive object={mat} />
     </points>
+  );
+}
+
+// =========================================================
+// WHITE STAR PARTICLES — subtle background stars
+// =========================================================
+function Stars() {
+  const count = 200;
+  const { positions, sizes } = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    const sz  = new Float32Array(count);
+    for (let i = 0; i < count; i++) {
+      pos[i * 3]     = (Math.random() - 0.5) * 80;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 40 + 5;
+      pos[i * 3 + 2] = -15 - Math.random() * 30;
+      sz[i]  = 0.4 + Math.random() * 0.8;
+    }
+    return { positions: pos, sizes: sz };
+  }, []);
+
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 } },
+    transparent: true,
+    depthWrite: false,
+    vertexShader: `
+      attribute float aSize;
+      uniform float uTime;
+      void main() {
+        gl_PointSize = aSize;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      void main() {
+        float d = distance(gl_PointCoord, vec2(0.5));
+        if (d > 0.5) discard;
+        float alpha = smoothstep(0.5, 0.0, d) * 0.35;
+        gl_FragColor = vec4(1.0, 0.90, 0.90, alpha);
+      }
+    `,
+  }), []);
+
+  useFrame(({ clock }) => { mat.uniforms.uTime.value = clock.getElapsedTime(); });
+
+  return (
+    <points>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
+        <bufferAttribute attach="attributes-aSize"    count={count} array={sizes}     itemSize={1} />
+      </bufferGeometry>
+      <primitive object={mat} />
+    </points>
+  );
+}
+
+// =========================================================
+// ABSTRACT WIREFRAME RINGS — floating geometric shapes
+// =========================================================
+function WireRing({ position, radius, tubeRadius, color, opacity, rotSpeed }) {
+  const meshRef = useRef();
+  const mat = useMemo(() => new THREE.MeshBasicMaterial({
+    color: new THREE.Color(color),
+    wireframe: true,
+    transparent: true,
+    opacity,
+  }), [color, opacity]);
+
+  useFrame(({ clock }) => {
+    if (!meshRef.current) return;
+    const t = clock.getElapsedTime();
+    meshRef.current.rotation.x += rotSpeed[0];
+    meshRef.current.rotation.y += rotSpeed[1];
+    meshRef.current.rotation.z += rotSpeed[2];
+    // Subtle float
+    meshRef.current.position.y = position[1] + Math.sin(t * 0.4 + position[0]) * 0.3;
+  });
+
+  return (
+    <mesh ref={meshRef} position={position}>
+      <torusGeometry args={[radius, tubeRadius, 8, 48]} />
+      <primitive object={mat} />
+    </mesh>
+  );
+}
+
+function WireRings() {
+  return (
+    <>
+      <WireRing position={[-8, 2, -14]} radius={2.2} tubeRadius={0.04} color="#E84545" opacity={0.35} rotSpeed={[0.004, 0.003, 0.001]} />
+      <WireRing position={[10, -1, -18]} radius={3.0} tubeRadius={0.03} color="#FF6B6B" opacity={0.20} rotSpeed={[-0.002, 0.005, 0.002]} />
+      <WireRing position={[0, 4, -22]} radius={4.5} tubeRadius={0.025} color="#E84545" opacity={0.12} rotSpeed={[0.001, -0.003, 0.004]} />
+      <WireRing position={[-14, -3, -20]} radius={2.8} tubeRadius={0.03} color="#FF9550" opacity={0.15} rotSpeed={[0.003, 0.002, -0.003]} />
+    </>
+  );
+}
+
+// =========================================================
+// ABSTRACT GEOMETRIC LINES — thin triangular shapes
+// =========================================================
+function GeometricShapes() {
+  const shapes = useMemo(() => {
+    const items = [];
+    const positions = [
+      [-12, 3, -12], [11, 5, -15], [-5, -4, -10],
+      [8, -2, -13], [0, 7, -16], [-9, -5, -17],
+    ];
+    for (let i = 0; i < positions.length; i++) {
+      const geo = new THREE.BufferGeometry();
+      const size = 0.8 + Math.random() * 1.4;
+      // Triangle verts
+      const verts = new Float32Array([
+        0, size, 0,
+        -size * 0.866, -size * 0.5, 0,
+        size * 0.866, -size * 0.5, 0,
+        0, size, 0,
+      ]);
+      geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+      const mat = new THREE.LineBasicMaterial({
+        color: i % 2 === 0 ? '#E84545' : '#FF6B6B',
+        transparent: true,
+        opacity: 0.18 + Math.random() * 0.12,
+      });
+      items.push({ geo, mat, pos: positions[i], rot: [Math.random() * Math.PI, Math.random() * Math.PI, 0] });
+    }
+    return items;
+  }, []);
+
+  const refs = useRef(shapes.map(() => null));
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+    refs.current.forEach((mesh, i) => {
+      if (!mesh) return;
+      mesh.rotation.z = t * (0.2 + i * 0.05) * (i % 2 === 0 ? 1 : -1);
+      mesh.position.y = shapes[i].pos[1] + Math.sin(t * 0.3 + i) * 0.25;
+    });
+  });
+
+  return (
+    <>
+      {shapes.map((s, i) => (
+        <line key={i} ref={el => refs.current[i] = el} position={s.pos} rotation={s.rot}>
+          <primitive object={s.geo} />
+          <primitive object={s.mat} />
+        </line>
+      ))}
+    </>
+  );
+}
+
+// =========================================================
+// SUBTLE GRID FLOOR — low-opacity red grid
+// =========================================================
+function GridFloor() {
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 } },
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    vertexShader: `
+      varying vec2 vUv;
+      void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+    `,
+    fragmentShader: `
+      uniform float uTime;
+      varying vec2 vUv;
+      void main() {
+        // Grid lines
+        float gx = abs(fract(vUv.x * 16.0) - 0.5);
+        float gy = abs(fract(vUv.y * 16.0) - 0.5);
+        float line = smoothstep(0.48, 0.45, min(gx, gy));
+        // Fade from center, fade at edges
+        float cx = 1.0 - abs(vUv.x - 0.5) * 2.0;
+        float cy = 1.0 - abs(vUv.y - 0.5) * 2.0;
+        float fade = cx * cy;
+        float alpha = line * fade * 0.10;
+        // Breathing
+        alpha *= 0.7 + 0.3 * sin(uTime * 0.3);
+        gl_FragColor = vec4(0.85, 0.12, 0.12, alpha);
+      }
+    `,
+  }), []);
+
+  useFrame(({ clock }) => { mat.uniforms.uTime.value = clock.getElapsedTime(); });
+
+  return (
+    <mesh position={[0, -4, -15]} rotation={[-0.3, 0, 0]} scale={[40, 20, 1]}>
+      <planeGeometry args={[1, 1]} />
+      <primitive object={mat} />
+    </mesh>
+  );
+}
+
+// =========================================================
+// RED GLOW LIGHT — atmospheric red bloom at bottom-center
+// =========================================================
+function RedGlow() {
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 } },
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `
+      uniform float uTime;
+      varying vec2 vUv;
+      void main() {
+        float d = distance(vUv, vec2(0.5, 0.5)) * 2.0;
+        float glow = exp(-d * d * 1.8);
+        float breathe = 0.6 + 0.4 * sin(uTime * 0.5);
+        float alpha = glow * breathe * 0.18;
+        gl_FragColor = vec4(0.90, 0.08, 0.08, alpha);
+      }
+    `,
+  }), []);
+
+  useFrame(({ clock }) => { mat.uniforms.uTime.value = clock.getElapsedTime(); });
+
+  return (
+    <mesh position={[0, -3, -8]} scale={[22, 10, 1]}>
+      <planeGeometry args={[1, 1]} />
+      <primitive object={mat} />
+    </mesh>
   );
 }
 
@@ -396,13 +361,13 @@ function DustParticles() {
 // =========================================================
 function CameraController() {
   const { camera } = useThree();
-  const mouse = useRef({ x: 0, y: 0 });
+  const mouse  = useRef({ x: 0, y: 0 });
   const target = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     const onMove = (e) => {
-      mouse.current.x = (e.clientX / window.innerWidth - 0.5) * 1.2;
-      mouse.current.y = (e.clientY / window.innerHeight - 0.5) * -0.6;
+      mouse.current.x = (e.clientX / window.innerWidth  - 0.5) * 1.5;
+      mouse.current.y = (e.clientY / window.innerHeight - 0.5) * -0.8;
     };
     window.addEventListener('mousemove', onMove, { passive: true });
     return () => window.removeEventListener('mousemove', onMove);
@@ -424,18 +389,19 @@ function CameraController() {
 export function OceanBackground() {
   return (
     <>
-      <HimalayanSky />
-      <Mountains />
-      <Mist />
-      <SunRays />
-      <Clouds />
-      <DustParticles />
+      <DarkVoid />
+      <RedGlow />
+      <GridFloor />
+      <WireRings />
+      <GeometricShapes />
+      <Stars />
+      <CrimsonParticles />
       <CameraController />
 
-      {/* Warm sunrise lighting */}
-      <ambientLight color="#FFF5E8" intensity={1.4} />
-      <directionalLight position={[0, 8, -15]} color="#FFE8C4" intensity={0.6} />
-      <pointLight position={[0, 5, -30]} color="#FFD4A0" intensity={0.4} distance={50} />
+      {/* Dark atmospheric lighting — subtle red tint */}
+      <ambientLight color="#200808" intensity={3.0} />
+      <pointLight position={[0, 2, -8]}  color="#E84545" intensity={0.6} distance={40} />
+      <pointLight position={[-10, 5, -15]} color="#FF6B6B" intensity={0.3} distance={30} />
     </>
   );
 }
