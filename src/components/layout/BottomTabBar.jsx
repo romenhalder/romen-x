@@ -33,17 +33,27 @@ export function BottomTabBar() {
   return (
     <div className="bottom-tab-bar lg:hidden" aria-label="Mobile navigation">
       <div className="flex items-center justify-around px-2 py-2">
-        {TABS.map(({ icon: Icon, label, section }) => {
-          const isActive = activeSection === section;
-          return (
+        {(() => {
+          const sectionMap = {
+            hero: 'hero',
+            about: 'hero',
+            experience: 'projects',
+            projects: 'projects',
+            patent: 'projects',
+            gallery: 'gallery',
+            resume: 'gallery',
+            contact: 'contact',
+          };
+          const currentTab = sectionMap[activeSection] || 'hero';
+          return TABS.map(({ icon: Icon, label, section }) => (
             <button
               key={section}
               onClick={() => scrollToSection(section)}
               aria-label={label}
               className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl cursor-pointer relative"
-              style={{ color: isActive ? 'var(--color-accent1)' : 'var(--color-text-secondary)' }}
+              style={{ color: currentTab === section ? 'var(--color-accent1)' : 'var(--color-text-secondary)' }}
             >
-              {isActive && (
+              {currentTab === section && (
                 <motion.div
                   layoutId="tab-active"
                   className="absolute inset-0 rounded-xl"
@@ -53,8 +63,8 @@ export function BottomTabBar() {
               <Icon size={20} />
               <span className="text-xs font-medium">{label}</span>
             </button>
-          );
-        })}
+          ));
+        })()}
         {/* Theme toggle */}
         <button
           onClick={toggleTheme}
