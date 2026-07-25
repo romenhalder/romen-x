@@ -617,36 +617,44 @@ function Nebula() {
     { pos: [6, 6, -23], color1: '#200020', color2: '#400040', rot: -0.15 },
   ], []);
 
+  const materials = useMemo(() => {
+    return nebulas.map((n) => new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 0 },
+        uColor1: { value: new THREE.Color(n.color1) },
+        uColor2: { value: new THREE.Color(n.color2) },
+      },
+      transparent: true, side: THREE.DoubleSide, depthWrite: false,
+      vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+      fragmentShader: `
+        ${NOISE_GLSL}
+        uniform float uTime; uniform vec3 uColor1; uniform vec3 uColor2; varying vec2 vUv;
+        void main(){
+          vec2 p=(vUv-0.5)*3.0;
+          float n=fbm(vec3(p*1.2,uTime*0.04),4);
+          float alpha=smoothstep(0.3,-0.1,length(p))*(0.5+n*0.5)*0.16;
+          vec3 color=mix(uColor1,uColor2,n*0.5+0.5);
+          gl_FragColor=vec4(color,alpha);
+        }
+      `,
+    }));
+  }, [nebulas]);
+
+  useFrame(({ clock: c }) => {
+    const t = c.getElapsedTime();
+    materials.forEach((mat) => {
+      mat.uniforms.uTime.value = t;
+    });
+  });
+
   return (
     <>
-      {nebulas.map((n, i) => {
-        const mat = new THREE.ShaderMaterial({
-          uniforms: {
-            uTime: { value: 0 },
-            uColor1: { value: new THREE.Color(n.color1) },
-            uColor2: { value: new THREE.Color(n.color2) },
-          },
-          transparent: true, side: THREE.DoubleSide, depthWrite: false,
-          vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
-          fragmentShader: `
-            ${NOISE_GLSL}
-            uniform float uTime; uniform vec3 uColor1; uniform vec3 uColor2; varying vec2 vUv;
-            void main(){
-              vec2 p=(vUv-0.5)*3.0;
-              float n=fbm(vec3(p*1.2,uTime*0.04),4);
-              float alpha=smoothstep(0.3,-0.1,length(p))*(0.5+n*0.5)*0.16;
-              vec3 color=mix(uColor1,uColor2,n*0.5+0.5);
-              gl_FragColor=vec4(color,alpha);
-            }
-          `,
-        });
-        return (
-          <mesh key={i} position={n.pos} rotation={[n.rot, i * 0.5, 0]}>
-            <planeGeometry args={[14, 14]} />
-            <primitive object={mat} />
-          </mesh>
-        );
-      })}
+      {nebulas.map((n, i) => (
+        <mesh key={i} position={n.pos} rotation={[n.rot, i * 0.5, 0]}>
+          <planeGeometry args={[14, 14]} />
+          <primitive object={materials[i]} />
+        </mesh>
+      ))}
     </>
   );
 }
