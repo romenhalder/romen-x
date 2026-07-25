@@ -21,21 +21,15 @@ export function CustomCursor() {
       dotPos.current = { x: e.clientX, y: e.clientY };
     };
 
-    const handleMouseEnterLink = () => {
-      dot.classList.add('hovering');
-      ring.classList.add('hovering');
-    };
-
-    const handleMouseLeaveLink = () => {
-      dot.classList.remove('hovering');
-      ring.classList.remove('hovering');
-    };
-
-    const addHoverListeners = () => {
-      document.querySelectorAll('a, button, [role="button"], [tabindex]').forEach((el) => {
-        el.addEventListener('mouseenter', handleMouseEnterLink);
-        el.addEventListener('mouseleave', handleMouseLeaveLink);
-      });
+    const handleMouseOver = (e) => {
+      const interactive = e.target.closest('a, button, [role="button"], [tabindex]');
+      if (interactive) {
+        dot.classList.add('hovering');
+        ring.classList.add('hovering');
+      } else {
+        dot.classList.remove('hovering');
+        ring.classList.remove('hovering');
+      }
     };
 
     const animate = () => {
@@ -52,18 +46,14 @@ export function CustomCursor() {
     };
 
     window.addEventListener('mousemove', handleMouseMove);
-    addHoverListeners();
-
-    // Re-add listeners when DOM changes
-    const observer = new MutationObserver(addHoverListeners);
-    observer.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener('mouseover', handleMouseOver);
 
     rafRef.current = requestAnimationFrame(animate);
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseover', handleMouseOver);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      observer.disconnect();
     };
   }, []);
 
