@@ -4,6 +4,7 @@ import { SectionHeading } from '../components/ui/SectionHeading';
 import { Mail, Phone, MapPin, Github, Linkedin, Send, Loader } from 'lucide-react';
 import toast from 'react-hot-toast';
 import profile from '../data/profile.json';
+import configData from '../data/config.json';
 
 const SUBJECTS = [
   'Job Opportunity',
@@ -89,8 +90,8 @@ export function Contact() {
 
     setLoading(true);
     try {
-      // Formspree integration — replace with your Formspree endpoint from .env.local
-      const endpoint = import.meta.env.VITE_FORMSPREE_ENDPOINT;
+      // Formspree integration — from env or configData
+      const endpoint = import.meta.env.VITE_FORMSPREE_ENDPOINT || configData.formspreeEndpoint;
 
       if (endpoint) {
         const res = await fetch(endpoint, {
