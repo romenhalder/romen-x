@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { SectionHeading } from '../components/ui/SectionHeading';
 import { TimelineCard } from '../components/ui/TimelineCard';
 import experience from '../data/experience.json';
@@ -13,9 +14,14 @@ export function Experience() {
 
         {/* Timeline container */}
         <div className="relative mt-8">
-          {/* Center line (desktop) */}
-          <div
-            className="hidden md:block absolute left-1/2 top-0 bottom-0 w-0.5 -translate-x-1/2 timeline-line rounded-full"
+          {/* Animated center line (desktop) — draws from top to bottom */}
+          <motion.div
+            className="hidden md:block absolute left-1/2 top-0 w-0.5 -translate-x-1/2 timeline-line rounded-full"
+            style={{ originY: 0 }}
+            initial={{ scaleY: 0, height: '100%' }}
+            whileInView={{ scaleY: 1 }}
+            viewport={{ once: true, margin: '-5%' }}
+            transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
             aria-hidden="true"
           />
 
