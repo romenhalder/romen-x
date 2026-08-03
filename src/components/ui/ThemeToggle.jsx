@@ -1,16 +1,16 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useThemeStore } from '../../store/themeStore';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Contrast } from 'lucide-react';
 
 export function ThemeToggle() {
   const { theme, toggleTheme } = useThemeStore();
-  const isOcean = theme === 'ocean';
+  const isArtBW = theme === 'artbw';
 
   return (
     <motion.button
       id="theme-toggle"
       onClick={toggleTheme}
-      aria-label={`Switch to ${isOcean ? 'Deep Space Night' : 'Ocean Day'} theme`}
+      aria-label={`Switch to ${isArtBW ? 'Crimson Noir' : 'Artistic B&W'} theme`}
       className="no-transition"
       style={{
         position: 'fixed',
@@ -22,18 +22,22 @@ export function ThemeToggle() {
         gap: '8px',
         padding: '8px 16px',
         borderRadius: '999px',
-        border: isOcean ? '1px solid rgba(232,69,69,0.40)' : '1px solid rgba(199,125,255,0.4)',
-        background: isOcean ? 'rgba(18,18,28,0.92)' : 'rgba(10,5,40,0.85)',
+        border: isArtBW
+          ? '1px solid rgba(255,255,255,0.25)'
+          : '1px solid rgba(255,42,84,0.40)',
+        background: isArtBW
+          ? 'rgba(16, 16, 16, 0.95)'
+          : 'rgba(16,8,14,0.92)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
-        color: isOcean ? '#E84545' : '#C77DFF',
+        color: isArtBW ? '#FFFFFF' : '#FF2A54',
         cursor: 'pointer',
         fontFamily: 'Inter, sans-serif',
         fontSize: '13px',
         fontWeight: 600,
-        boxShadow: isOcean
-          ? '0 4px 20px rgba(232,69,69,0.28)'
-          : '0 4px 20px rgba(199,125,255,0.25)',
+        boxShadow: isArtBW
+          ? '0 4px 20px rgba(255,255,255,0.10)'
+          : '0 4px 20px rgba(255,42,84,0.28)',
         minWidth: '44px',
       }}
       whileHover={{ scale: 1.06 }}
@@ -48,7 +52,7 @@ export function ThemeToggle() {
           transition={{ duration: 0.25 }}
           style={{ display: 'flex', alignItems: 'center' }}
         >
-          {isOcean ? <Moon size={16} /> : <Sun size={16} />}
+          {isArtBW ? <Sun size={16} /> : <Contrast size={16} />}
         </motion.span>
       </AnimatePresence>
 
@@ -62,7 +66,7 @@ export function ThemeToggle() {
           style={{ display: 'none' }}
           className="sm-visible"
         >
-          {isOcean ? 'Night' : 'Day'}
+          {isArtBW ? 'Color' : 'B&W'}
         </motion.span>
       </AnimatePresence>
 
