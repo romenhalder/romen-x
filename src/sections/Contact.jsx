@@ -30,17 +30,19 @@ function ContactInfo() {
         <motion.div
           key={label}
           className="flex items-center gap-4"
-          initial={{ opacity: 0, x: -20 }}
+          initial={{ opacity: 0, x: -24 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: i * 0.08 }}
+          viewport={{ once: true, margin: '-5%' }}
+          transition={{ delay: i * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div
+          <motion.div
             className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-accent)' }}
+            whileHover={{ scale: 1.12, rotate: 5 }}
+            transition={{ type: 'spring', stiffness: 300 }}
           >
             <Icon size={18} style={{ color: 'var(--color-accent1)' }} />
-          </div>
+          </motion.div>
           <div>
             <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{label}</p>
             {href ? (
@@ -143,7 +145,7 @@ export function Contact() {
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
           >
             <h3 className="font-space font-bold text-xl mb-6" style={{ color: 'var(--color-text-primary)' }}>
               Send a Message
@@ -151,7 +153,12 @@ export function Contact() {
 
             <form onSubmit={handleSubmit} noValidate className="space-y-4">
               {/* Name */}
-              <div>
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.10, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              >
                 <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
                   Name *
                 </label>
@@ -173,10 +180,15 @@ export function Contact() {
                     style={{ color: '#FF6B6B' }}
                   >{errors.name}</motion.p>
                 )}
-              </div>
+              </motion.div>
 
               {/* Email */}
-              <div>
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.18, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              >
                 <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
                   Email *
                 </label>
@@ -198,10 +210,15 @@ export function Contact() {
                     style={{ color: '#FF6B6B' }}
                   >{errors.email}</motion.p>
                 )}
-              </div>
+              </motion.div>
 
               {/* Subject */}
-              <div>
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.26, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              >
                 <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
                   Subject
                 </label>
@@ -214,10 +231,15 @@ export function Contact() {
                 >
                   {SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
-              </div>
+              </motion.div>
 
               {/* Message */}
-              <div>
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.34, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              >
                 <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
                   Message *
                 </label>
@@ -239,18 +261,24 @@ export function Contact() {
                     style={{ color: '#FF6B6B' }}
                   >{errors.message}</motion.p>
                 )}
-              </div>
+              </motion.div>
 
-              <button
+              <motion.button
                 type="submit"
                 disabled={loading}
                 className="w-full py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 btn-ripple cursor-pointer disabled:opacity-70"
                 style={{ background: 'var(--gradient-accent)', color: 'white' }}
                 aria-label="Send message"
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.42, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
               >
                 {loading ? <Loader size={18} className="animate-spin" /> : <Send size={18} />}
                 {loading ? 'Sending...' : 'Send Message'}
-              </button>
+              </motion.button>
             </form>
           </motion.div>
         </div>
