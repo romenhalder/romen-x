@@ -13,9 +13,9 @@ export function ProfilePhoto3D({ size = 320 }) {
   const isDay = theme === 'ocean';
 
   // Colors per theme
-  const accent = isDay ? '#1E6091' : '#C77DFF';
-  const accent2 = isDay ? '#D4A04A' : '#A855F7';
-  const glowColor = isDay ? 'rgba(30,96,145,' : 'rgba(199,125,255,';
+  const accent = isDay ? '#FF2A54' : '#C77DFF';
+  const accent2 = isDay ? '#FF9E59' : '#A855F7';
+  const glowColor = isDay ? 'rgba(255,42,84,' : 'rgba(199,125,255,';
 
   useEffect(() => {
     import('../../assets/profile-photo.jpg')
